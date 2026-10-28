@@ -1,0 +1,27 @@
+# Netlify settings (these override the dashboard's build settings)
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Built JS/CSS files have unique names, so they can be cached for a year
+[[headers]]
+  for = "/_astro/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Old-style URLs with .html go to the clean version
+[[redirects]]
+  from = "/services/*.html"
+  to = "/services/:splat"
+  status = 301

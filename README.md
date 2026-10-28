@@ -35,18 +35,18 @@ npm run preview    # serve the built site
 
 Copy `.env.example` to `.env`. Each feature turns on when its value is set:
 
-- `SITE_URL` — your real domain (canonical URLs + sitemap)
+- `SITE_URL` — your real domain (canonical URLs + sitemap). On Netlify, if left empty, the Netlify address is used automatically
 - `PUBLIC_GA_ID` — Google Analytics 4. Calls, WhatsApp, email, directions and form submits are tracked as `generate_lead`
 - `PUBLIC_GSC_VERIFICATION` / `PUBLIC_BING_VERIFICATION` — Search Console / Bing verification
 - `PUBLIC_WEB3FORMS_KEY` — free key from web3forms.com; every form is then emailed to you
 
 ## Deploy
 
-Works on **Vercel**, **Netlify** or **Cloudflare Pages** (free): build command `npm run build`, output folder `dist`. Add the `.env` values in the host's dashboard.
+Set up for **Netlify** via `netlify.toml` (build command, Node 20, caching & security headers). Add the `.env` values under Site configuration → Environment variables, then trigger a new deploy. Also works on Vercel / Cloudflare Pages: build command `npm run build`, output folder `dist`.
 
 ## Launch checklist (things code can't do)
 
-1. Replace placeholders: phone, address, map coordinates (`Base.astro`), GSTIN, domain (`robots.txt`, `SITE_URL`), social links (`SOCIALS` in `data.ts`).
+1. Replace placeholders: phone, address, map coordinates (`Base.astro`), GSTIN, domain (`SITE_URL`), social links (`SOCIALS` in `data.ts`).
 2. Replace the "4.9 Google rating / 600+ reviews" text with real numbers, or remove it.
 3. Replace sample projects, client names and testimonials with real ones (with permission).
 4. Add real photos: export as WebP, name them descriptively (`led-sign-board-cafe-gurugram.webp`), and write alt text.

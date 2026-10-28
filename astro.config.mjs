@@ -3,8 +3,11 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 
-// Change SITE_URL to the real domain before deploying (used for canonical URLs & sitemap).
-const SITE_URL = process.env.SITE_URL || "https://inkwaveprints.in";
+// The site's public address (used for canonical URLs, sitemap & link previews).
+// 1. SITE_URL if you set it (your real domain)
+// 2. otherwise Netlify's own address (Netlify provides URL during builds)
+// 3. otherwise a placeholder for local builds
+const SITE_URL = process.env.SITE_URL || process.env.URL || "https://inkwaveprints.in";
 
 export default defineConfig({
   site: SITE_URL,
