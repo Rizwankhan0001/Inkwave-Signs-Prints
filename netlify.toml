@@ -5,6 +5,9 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # These values are meant to be public (they appear in the page HTML/JS),
+  # so Netlify's secrets scanner should not block the build because of them.
+  SECRETS_SCAN_OMIT_KEYS = "SITE_URL,PUBLIC_GA_ID,PUBLIC_GSC_VERIFICATION,PUBLIC_BING_VERIFICATION,PUBLIC_WEB3FORMS_KEY"
 
 # Built JS/CSS files have unique names, so they can be cached for a year
 [[headers]]
