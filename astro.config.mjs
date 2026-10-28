@@ -4,10 +4,11 @@ import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 
 // The site's public address (used for canonical URLs, sitemap & link previews).
-// 1. SITE_URL if you set it (your real domain)
-// 2. otherwise Netlify's own address (Netlify provides URL during builds)
-// 3. otherwise a placeholder for local builds
-const SITE_URL = process.env.SITE_URL || process.env.URL || "https://inkwaveprints.in";
+// 1. On Netlify: its URL variable — the primary domain, which switches to your own
+//    domain automatically once you connect one in Netlify → Domain management
+// 2. Elsewhere: SITE_URL if you set it
+// 3. Otherwise a placeholder for local builds
+const SITE_URL = process.env.URL || process.env.SITE_URL || "https://inkwaveprints.in";
 
 export default defineConfig({
   site: SITE_URL,
