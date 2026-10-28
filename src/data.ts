@@ -129,6 +129,7 @@ export const FAQS = [
   { q: "Do you install outside Gurugram?", a: "We install across Delhi NCR — Gurugram, Delhi, Faridabad, Noida and Manesar. For bulk orders we also ship pan-India." },
   { q: "What warranty do LED signs come with?", a: "LED modules and drivers carry a 1-year replacement warranty, and we offer annual maintenance contracts for retail chains." },
   { q: "Can I order just one piece?", a: "Absolutely. There is no minimum order for most products — from a single name plate to a 500-unit retail rollout." },
+  { q: "Do you give discounts on bulk orders?", a: "Yes, automatically. Rates drop as your order grows: up to 20% off on signage, boards and name plates, and up to 40% off on large print runs. The instant estimator shows your discount live, and each service page has its bulk price table." },
 ];
 
 import {
@@ -138,6 +139,7 @@ import {
 export const OFFERS = [
   "Diwali offer · Flat 15% off LED & 3D letter signs till 15 Nov",
   "Free storefront mock-up with every signage order",
+  "Bulk orders: rates drop automatically, up to 20% off",
   "Express 24h delivery on flex, vinyl & standees",
   "GST invoice · Free site visit anywhere in Gurugram",
 ];

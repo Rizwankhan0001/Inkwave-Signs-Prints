@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calculator, Send, CheckCircle2 } from "lucide-react";
+import { Calculator, Send, CheckCircle2, BadgePercent, TrendingDown } from "lucide-react";
 import { BRAND, SERVICES, SERVICE_EVENT, SERVICE_SLUGS, type ServiceEventDetail } from "../data";
 import { saveLead } from "../leads";
+import { bulkQuote, ruleFor } from "../pricing";
 import { SectionHeading } from "./ui";
 
 const ADDONS = [
@@ -18,6 +19,7 @@ export default function Quote() {
   const [w, setW] = useState(6);
   const [h, setH] = useState(3);
   const [qty, setQty] = useState(1);
+  const [letters, setLetters] = useState(8);
   const [addons, setAddons] = useState<string[]>(["install"]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -45,13 +47,28 @@ export default function Quote() {
   const service = SERVICES.find((s) => s.title === svc)!;
   const isArea = service.unit === "sq.ft";
   const isInch = service.unit === "inch";
+  const rule = ruleFor(service.unit);
 
-  const { base, extra, total } = useMemo(() => {
-    const units = isArea ? w * h : isInch ? w * 12 : 1; // letters priced per inch of letter height × letter count approximation
-    const base = service.from * units * qty;
-    const extra = ADDONS.filter((a) => addons.includes(a.id)).reduce((s, a) => s + base * a.pct, 0);
-    return { base, extra, total: base + extra };
-  }, [service, w, h, qty, addons, isArea, isInch]);
+  // Each product starts at a sensible quantity (e.g. 100 copies for printing)
+  useEffect(() => { setQty(ruleFor(service.unit).defaultQty); }, [service.unit]);
+
+  /** Size of one item in the unit it's priced by (sq.ft per board, inches per set of letters) */
+  const perItem = isArea ? w * h : isInch ? w * letters : 1;
+
+  const { bulk, extra, total, listTotal } = useMemo(() => {
+    const bulk = bulkQuote(service.from, service.unit, perItem * qty);
+    const addonPct = ADDONS.filter((a) => addons.includes(a.id)).reduce((s, a) => s + a.pct, 0);
+    const extra = bulk.subtotal * addonPct;
+    // Price without the bulk discount, add-ons included (shown struck through)
+    const listTotal = bulk.list * (1 + addonPct);
+    return { bulk, extra, total: bulk.subtotal + extra, listTotal };
+  }, [service, perItem, qty, addons]);
+  const savedTotal = listTotal - total;
+
+  // Quantity needed to reach the next discount tier
+  const nextQty = bulk.next ? Math.ceil(bulk.next.tier.min / perItem) : null;
+  const qtyLabel = isArea ? "Number of boards" : isInch ? "Number of signs" : service.unit === "copy" ? "Copies" : "Quantity";
+  const pct = (n: number) => `${Math.round(n * 100)}%`;
 
   const toggle = (id: string) => setAddons((a) => (a.includes(id) ? a.filter((x) => x !== id) : [...a, id]));
 
@@ -62,8 +79,9 @@ export default function Quote() {
       `Name: ${name}`,
       `Phone: ${phone}`,
       `Product: ${service.title}`,
-      isArea ? `Size: ${w} × ${h} ft` : isInch ? `Letter height: ${w} in` : null,
-      `Quantity: ${qty}`,
+      isArea ? `Size: ${w} × ${h} ft` : isInch ? `Letters: ${letters} × ${w} in high` : null,
+      `${qtyLabel}: ${qty}`,
+      bulk.off ? `Bulk discount: ${pct(bulk.off)} (saves ${inr(savedTotal)})` : null,
       addons.length ? `Add-ons: ${ADDONS.filter((a) => addons.includes(a.id)).map((a) => a.label).join(", ")}` : null,
       `Website estimate: ${inr(total)} + GST`,
     ].filter(Boolean);
@@ -100,28 +118,46 @@ export default function Quote() {
             </div>
 
             {(isArea || isInch) && (
-              <div className={`grid gap-4 ${isArea ? "sm:grid-cols-2" : ""}`}>
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-2 flex justify-between text-sm font-medium text-fg" htmlFor="w">
                     {isArea ? "Width" : "Letter height"} <span className="text-cyan">{w} {isArea ? "ft" : "in"}</span>
                   </label>
                   <input id="w" type="range" min={1} max={isArea ? 40 : 36} value={w} onChange={(e) => setW(+e.target.value)} className="h-6 w-full cursor-pointer accent-cyan" />
                 </div>
-                {isArea && (
+                {isArea ? (
                   <div>
                     <label className="mb-2 flex justify-between text-sm font-medium text-fg" htmlFor="h">Height <span className="text-magenta">{h} ft</span></label>
                     <input id="h" type="range" min={1} max={20} value={h} onChange={(e) => setH(+e.target.value)} className="h-6 w-full cursor-pointer accent-magenta" />
+                  </div>
+                ) : (
+                  <div>
+                    <label className="mb-2 flex justify-between text-sm font-medium text-fg" htmlFor="letters">Number of letters <span className="text-magenta">{letters}</span></label>
+                    <input id="letters" type="range" min={1} max={30} value={letters} onChange={(e) => setLetters(+e.target.value)} className="h-6 w-full cursor-pointer accent-magenta" />
                   </div>
                 )}
               </div>
             )}
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-fg" htmlFor="qty">Quantity</label>
-              <div className="flex w-full items-center rounded-xl border border-line bg-ink sm:w-44">
-                <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} className="px-5 py-3 text-lg text-mute hover:text-fg" aria-label="Decrease">−</button>
-                <input id="qty" type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, +e.target.value || 1))} className="w-full bg-transparent text-center text-fg outline-none" />
-                <button type="button" onClick={() => setQty((q) => q + 1)} className="px-5 py-3 text-lg text-mute hover:text-fg" aria-label="Increase">+</button>
+              <label className="mb-2 flex items-center justify-between text-sm font-medium text-fg" htmlFor="qty">
+                {qtyLabel}
+                <span className="flex items-center gap-1 text-xs font-normal text-[#22c55e]"><BadgePercent className="h-3.5 w-3.5" /> Bulk orders save up to {pct(Math.max(...rule.tiers.map((t) => t.off)))}</span>
+              </label>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <div className="flex w-full items-center rounded-xl border border-line bg-ink sm:w-44">
+                  <button type="button" onClick={() => setQty((q) => Math.max(1, q - (service.unit === "copy" ? 50 : 1)))} className="px-5 py-3 text-lg text-mute hover:text-fg" aria-label="Decrease">−</button>
+                  <input id="qty" type="number" min={1} value={qty} onChange={(e) => setQty(Math.max(1, +e.target.value || 1))} className="w-full bg-transparent text-center text-fg outline-none" />
+                  <button type="button" onClick={() => setQty((q) => q + (service.unit === "copy" ? 50 : 1))} className="px-5 py-3 text-lg text-mute hover:text-fg" aria-label="Increase">+</button>
+                </div>
+                <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
+                  {rule.quickQty.map((n) => (
+                    <button type="button" key={n} onClick={() => setQty(n)}
+                      className={`shrink-0 rounded-full border px-3 py-1.5 text-xs transition ${qty === n ? "border-cyan bg-cyan/10 text-fg" : "border-line text-mute hover:text-fg"}`}>
+                      {n.toLocaleString("en-IN")}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -158,12 +194,50 @@ export default function Quote() {
               <motion.div key={Math.round(total)} initial={{ opacity: 0.4, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-3 font-display text-4xl font-bold text-fg sm:text-5xl">
                 {inr(total)}
               </motion.div>
-              <div className="mt-1 text-sm text-mute">+ GST · indicative only</div>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-mute">
+                {bulk.off > 0 && <s className="text-mute/70">{inr(listTotal)}</s>}
+                + GST · indicative only
+              </div>
 
-              <dl className="mt-8 space-y-3 text-sm">
-                <div className="flex justify-between"><dt className="text-mute">{service.title}</dt><dd className="text-fg">{inr(base)}</dd></div>
-                <div className="flex justify-between text-mute"><dt>Rate</dt><dd>₹{service.from}/{service.unit}</dd></div>
+              <AnimatePresence>
+                {bulk.off > 0 && (
+                  <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className="mt-4 flex items-center gap-2 rounded-xl border border-[#22c55e]/30 bg-[#22c55e]/10 px-3 py-2 text-sm font-medium text-[#4ade80] light:text-[#15803d]">
+                    <TrendingDown className="h-4 w-4 shrink-0" /> You save {inr(savedTotal)} with a {pct(bulk.off)} bulk discount
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Discount tiers */}
+              <div className="mt-6">
+                <div className="mb-2 flex justify-between text-xs text-mute">
+                  <span>Bulk discount</span>
+                  <span>{bulk.volume.toLocaleString("en-IN")} {rule.measure}</span>
+                </div>
+                <div className="flex gap-1">
+                  {rule.tiers.map((t, i) => (
+                    <div key={t.min} className="flex-1">
+                      <div className={`h-1.5 rounded-full transition-colors ${i <= bulk.tierIndex ? "bg-gradient-to-r from-cyan to-magenta" : "bg-fg/10"}`} />
+                      <div className={`mt-1.5 text-center text-[10px] ${i === bulk.tierIndex ? "font-semibold text-fg" : "text-mute"}`}>{t.off ? `−${pct(t.off)}` : "0%"}</div>
+                    </div>
+                  ))}
+                </div>
+                {bulk.next && nextQty && (
+                  <button type="button" onClick={() => setQty(nextQty)}
+                    className="mt-3 w-full rounded-xl border border-dashed border-cyan/40 px-3 py-2 text-left text-xs text-fg/85 transition hover:border-cyan hover:bg-cyan/5">
+                    Make it <b className="text-fg">{nextQty.toLocaleString("en-IN")}</b> {qtyLabel.toLowerCase().replace("number of ", "")} and get <b className="text-cyan">{pct(bulk.next.tier.off)} off</b> →
+                  </button>
+                )}
+              </div>
+
+              <dl className="mt-6 space-y-3 text-sm">
+                <div className="flex justify-between"><dt className="text-mute">{service.title}</dt><dd className="text-fg">{inr(bulk.subtotal)}</dd></div>
+                <div className="flex justify-between text-mute">
+                  <dt>Rate</dt>
+                  <dd>{bulk.off > 0 && <s className="mr-1.5 opacity-60">₹{service.from}</s>}₹{bulk.rate < 10 ? bulk.rate.toFixed(2) : Math.round(bulk.rate).toLocaleString("en-IN")}/{service.unit}</dd>
+                </div>
                 {isArea && <div className="flex justify-between text-mute"><dt>Area</dt><dd>{w * h} sq.ft × {qty}</dd></div>}
+                {isInch && <div className="flex justify-between text-mute"><dt>Lettering</dt><dd>{letters} × {w}" × {qty}</dd></div>}
                 <div className="flex justify-between"><dt className="text-mute">Add-ons</dt><dd className="text-fg">{inr(extra)}</dd></div>
               </dl>
 

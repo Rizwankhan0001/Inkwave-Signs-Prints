@@ -4,7 +4,8 @@ import { BRAND, INDUSTRIES, PROCESS, SERVICES, SERVICE_SLUGS, inSentence, indust
 import { SERVICE_DETAILS } from "../../details";
 import { GUIDES, SERVICE_GUIDES, serviceFaqs } from "../../content";
 import { accentClass } from "../../components/ui";
-import { Check, Clock, ShieldCheck, Hourglass, Calculator, MessageCircle, ArrowRight, ChevronDown, BookOpen } from "lucide-react";
+import { maxDiscount, tierRows } from "../../pricing";
+import { Check, Clock, ShieldCheck, Hourglass, Calculator, MessageCircle, ArrowRight, ChevronDown, BookOpen, BadgePercent } from "lucide-react";
 
 export function getStaticPaths() {
   return SERVICES.map((s) => ({ params: { slug: SERVICE_SLUGS[s.title] }, props: { title: s.title } }));
@@ -22,6 +23,8 @@ const related = SERVICES.filter((x) => x.category === s.category && x.title !== 
 const guides = GUIDES.filter((x) => x.related.includes(title));
 const wa = `https://wa.me/${BRAND.phoneRaw}?text=${encodeURIComponent(`Hi! I'm interested in ${title}. Can you share options and pricing?`)}`;
 const site = Astro.site!.toString().replace(/\/$/, "");
+const bulkRows = tierRows(s.from, s.unit);
+const lowest = s.from * (1 - maxDiscount(s.unit));
 
 const schema = [
   {
@@ -33,7 +36,7 @@ const schema = [
     url: site + serviceUrl(title),
     provider: { "@id": `${site}/#business` },
     areaServed: ["Gurugram", "Delhi", "Faridabad", "Noida", "Manesar"],
-    offers: { "@type": "Offer", priceCurrency: "INR", price: s.from, priceSpecification: { "@type": "UnitPriceSpecification", price: s.from, priceCurrency: "INR", unitText: s.unit } },
+    offers: { "@type": "AggregateOffer", priceCurrency: "INR", lowPrice: Math.round(lowest * 100) / 100, highPrice: s.from, offerCount: bulkRows.length, priceSpecification: { "@type": "UnitPriceSpecification", price: s.from, priceCurrency: "INR", unitText: s.unit } },
   },
   { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
 ];
@@ -115,6 +118,26 @@ const schema = [
         </ol>
       </section>
 
+      <section class="mt-12" id="bulk-pricing">
+        <h2 class="font-display text-2xl font-bold text-fg">Bulk pricing</h2>
+        <p class="mt-3 text-mute">Ordering more? The rate drops automatically as your order grows, up to <b class="text-fg">{Math.round(maxDiscount(s.unit) * 100)}% off</b>. Great for retail chains, offices and events.</p>
+        <div class="mt-5 overflow-hidden rounded-2xl border border-line">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-fg/5 text-fg"><tr><th class="px-4 py-3 font-semibold">Order size</th><th class="px-4 py-3 font-semibold">Discount</th><th class="px-4 py-3 text-right font-semibold">Your rate</th></tr></thead>
+            <tbody class="divide-y divide-line">
+              {bulkRows.map((r) => (
+                <tr>
+                  <td class="px-4 py-3 text-fg/85">{r.size}</td>
+                  <td class="px-4 py-3">{r.offValue ? <span class="rounded-full bg-[#22c55e]/10 px-2.5 py-1 text-xs font-semibold text-[#4ade80] light:text-[#15803d]">{r.off}</span> : <span class="text-mute">{r.off}</span>}</td>
+                  <td class="px-4 py-3 text-right font-semibold text-fg">{r.rate}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-3 text-xs text-mute">Rates exclude GST, installation and add-ons. Larger or repeat orders? Ask us for a custom quote.</p>
+      </section>
+
       <section class="mt-12">
         <h2 class="font-display text-2xl font-bold text-fg">How it works</h2>
         <ol class="mt-5 grid gap-4 sm:grid-cols-2">
@@ -158,6 +181,7 @@ const schema = [
           <li class="flex items-center gap-3 text-fg/85"><Clock className="h-4 w-4 text-cyan" /> Ready in {d.turnaround}</li>
           <li class="flex items-center gap-3 text-fg/85"><ShieldCheck className="h-4 w-4 text-magenta" /> {d.warranty} warranty</li>
           <li class="flex items-center gap-3 text-fg/85"><Hourglass className="h-4 w-4 text-yellow" /> Lasts {d.life}</li>
+          <li><a href="#bulk-pricing" class="flex items-center gap-3 font-medium text-[#4ade80] light:text-[#15803d]"><BadgePercent className="h-4 w-4" /> Bulk orders: up to {Math.round(maxDiscount(s.unit) * 100)}% off</a></li>
         </ul>
         <div class="grid gap-2 p-5 pt-0">
           <a href={`/?service=${slug}#quote`} class="flex items-center justify-center gap-2 rounded-full bg-fg py-3 text-sm font-semibold text-ink transition hover:bg-yellow hover:text-onaccent">Calculate my price</a>
