@@ -1,0 +1,18 @@
+---
+import Page from "../layouts/Page.astro";
+import { BRAND } from "../data";
+---
+<Page title="Privacy Policy | Inkwave Signs & Prints" description="How Inkwave Signs & Prints collects and uses information you share through this website." breadcrumbs={[{ name: "Privacy Policy", path: "/privacy" }]} h1="Privacy policy" lead="Last updated: 28 October 2026">
+  <div class="mx-auto max-w-3xl space-y-6 px-4 leading-relaxed text-fg/80 sm:px-6">
+    <p>This policy explains what information {BRAND.full} ("we") collects through this website and how it is used.</p>
+    <h2 class="font-display text-xl font-bold text-fg">What we collect</h2>
+    <p>When you submit a quote, callback or price-list form, we collect the details you enter, such as your name, phone number, email and project details. If you contact us on WhatsApp, phone or email, we receive the information you share there.</p>
+    <p>We may use analytics tools (such as Google Analytics) that collect anonymous usage data like pages visited, device type and approximate location, to understand how the site is used.</p>
+    <h2 class="font-display text-xl font-bold text-fg">How we use it</h2>
+    <p>Only to respond to your enquiry, prepare quotes and designs, deliver and install your order, and improve this website. We do not sell your information.</p>
+    <h2 class="font-display text-xl font-bold text-fg">Third parties</h2>
+    <p>Form submissions may be processed by a form service that emails them to us. Maps are provided by Google Maps. These services have their own privacy policies.</p>
+    <h2 class="font-display text-xl font-bold text-fg">Your choices</h2>
+    <p>You can ask us to view, correct or delete your information at any time by emailing <a class="text-cyan underline" href={`mailto:${BRAND.email}`}>{BRAND.email}</a>.</p>
+  </div>
+</Page>

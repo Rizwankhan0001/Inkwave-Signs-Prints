@@ -1,0 +1,278 @@
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/space-grotesk";
+@import "tailwindcss";
+
+/* `light:` utilities apply only when the light theme is on */
+@custom-variant light (&:where([data-theme=light], [data-theme=light] *));
+
+@theme {
+  --font-display: "Space Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Surfaces & text — these flip in light mode (see below) */
+  --color-ink: #07070e;     /* page background */
+  --color-ink-2: #0d0d1a;   /* alternate section background */
+  --color-ink-3: #161628;   /* raised surface */
+  --color-line: #24243c;    /* borders */
+  --color-mute: #a4a5c3;    /* secondary text */
+  --color-fg: #f5f5fc;      /* primary text */
+
+  /* Text placed on bright accent colours — always dark */
+  --color-onaccent: #0b0b14;
+
+  /* CMYK accents — a nod to print */
+  --color-cyan: #00c2ff;
+  --color-magenta: #ff3d7f;
+  --color-yellow: #ffb800;
+
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-flicker: flicker 6s linear infinite;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+  20%, 24%, 55% { opacity: 0.55; }
+}
+
+:root {
+  color-scheme: dark;
+  --grid-line: rgb(255 255 255 / 0.04);
+  --card-from: rgb(255 255 255 / 0.055);
+  --card-to: rgb(255 255 255 / 0.012);
+  --card-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06), 0 20px 40px -24px rgb(0 0 0 / 0.8);
+}
+
+/* ───────── Light theme ───────── */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --color-ink: #f6f5f1;
+  --color-ink-2: #ffffff;
+  --color-ink-3: #eeece5;
+  --color-line: #e2dfd5;
+  --color-mute: #5d5d72;
+  --color-fg: #11111b;
+  --color-cyan: #0284c7;
+  --color-magenta: #db2777;
+  --color-yellow: #d48300;
+  --grid-line: rgb(17 17 27 / 0.05);
+  --card-from: #ffffff;
+  --card-to: #ffffff;
+  --card-shadow: 0 1px 2px rgb(17 17 27 / 0.04), 0 8px 24px -12px rgb(17 17 27 / 0.12);
+}
+
+/* Illustrations (lit signs, storefronts) stay dark in both themes */
+.theme-dark {
+  --color-ink: #07070e;
+  --color-ink-2: #0d0d1a;
+  --color-ink-3: #161628;
+  --color-line: #24243c;
+  --color-mute: #a4a5c3;
+  --color-fg: #ffffff;
+  --color-cyan: #00c2ff;
+  --color-magenta: #ff3d7f;
+  --color-yellow: #ffb800;
+  --grid-line: rgb(255 255 255 / 0.04);
+  --card-from: rgb(255 255 255 / 0.06);
+  --card-to: rgb(255 255 255 / 0.02);
+  --card-shadow: none;
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+section[id] { scroll-margin-top: 72px; }
+
+body {
+  background: var(--color-ink);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+:focus-visible { outline: 2px solid var(--color-cyan); outline-offset: 2px; }
+
+::selection { background: var(--color-magenta); color: #fff; }
+
+.text-gradient {
+  background: linear-gradient(100deg, var(--color-cyan), var(--color-magenta) 50%, var(--color-yellow));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.neon {
+  color: #fff;
+  text-shadow: 0 0 6px #fff, 0 0 18px #ff3d7f, 0 0 42px #ff3d7f;
+}
+.neon-cyan {
+  color: #fff;
+  text-shadow: 0 0 6px #fff, 0 0 18px #00c2ff, 0 0 42px #00c2ff;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@layer components {
+  .card {
+    position: relative;
+    isolation: isolate;
+    background: linear-gradient(180deg, var(--card-from), var(--card-to));
+    border: 1px solid var(--color-line);
+    box-shadow: var(--card-shadow);
+  }
+}
+
+/* Google map: darken in dark mode */
+:root:not([data-theme="light"]) .map-frame iframe { filter: invert(0.9) hue-rotate(180deg) saturate(0.8) contrast(0.9); }
+
+/* ═════════════ Dark theme polish (light theme untouched) ═════════════ */
+:root:not([data-theme="light"]) {
+  --aurora-1: rgb(124 58 237 / 0.16);
+  --aurora-2: rgb(0 194 255 / 0.09);
+  --aurora-3: rgb(255 61 127 / 0.10);
+  scrollbar-color: #2b2b47 var(--color-ink);
+}
+
+/* Soft coloured light behind the whole page */
+:root:not([data-theme="light"]) body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(50% 40% at 8% 0%, var(--aurora-1), transparent 70%),
+    radial-gradient(40% 35% at 95% 25%, var(--aurora-2), transparent 70%),
+    radial-gradient(45% 40% at 50% 105%, var(--aurora-3), transparent 70%);
+}
+
+/* Fine film grain for depth */
+:root:not([data-theme="light"]) body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Gradient words glow like neon */
+:root:not([data-theme="light"]) .text-gradient {
+  filter: drop-shadow(0 0 22px rgb(255 61 127 / 0.28)) drop-shadow(0 0 40px rgb(0 194 255 / 0.12));
+}
+
+/* Cards: glow + lit border that follow the pointer */
+@layer components {
+  :root:not([data-theme="light"]) .card::before,
+  :root:not([data-theme="light"]) .card::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  :root:not([data-theme="light"]) .card::before {
+    z-index: -1;
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgb(124 58 237 / 0.14), transparent 45%);
+  }
+  :root:not([data-theme="light"]) .card::after {
+    padding: 1px;
+    background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 0%), rgb(0 194 255 / 0.75), rgb(255 61 127 / 0.45) 40%, transparent 70%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+  :root:not([data-theme="light"]) .card:hover::before,
+  :root:not([data-theme="light"]) .card:hover::after { opacity: 1; }
+}
+
+/* Section edges get a coloured hairline instead of a flat grey line */
+:root:not([data-theme="light"]) main > section.border-y,
+:root:not([data-theme="light"]) main > div.border-y,
+:root:not([data-theme="light"]) main > section.border-t,
+:root:not([data-theme="light"]) footer.border-t {
+  border-image: linear-gradient(90deg, transparent, rgb(0 194 255 / 0.35) 30%, rgb(255 61 127 / 0.35) 70%, transparent) 1;
+}
+
+/* Footer brand wordmark */
+.footer-wordmark {
+  color: transparent;
+  -webkit-text-stroke: 1px var(--color-line);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.07), transparent 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-mask-image: linear-gradient(180deg, #000 35%, transparent 95%);
+  mask-image: linear-gradient(180deg, #000 35%, transparent 95%);
+  margin-bottom: -0.2em;
+}
+:root:not([data-theme="light"]) .footer-wordmark {
+  -webkit-text-stroke: 1px rgb(255 255 255 / 0.08);
+  background-image: linear-gradient(100deg, rgb(0 194 255 / 0.18), rgb(124 58 237 / 0.16) 45%, rgb(255 61 127 / 0.16) 75%, rgb(255 184 0 / 0.12));
+}
+:root[data-theme="light"] .footer-wordmark { background-image: linear-gradient(180deg, rgb(17 17 27 / 0.05), transparent 75%); }
+
+/* Thin hairline with a coloured centre, used between sections */
+.glow-line {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-line) 15%, rgb(0 194 255 / 0.6) 40%, rgb(255 61 127 / 0.6) 60%, var(--color-line) 85%, transparent);
+}
+:root[data-theme="light"] .glow-line { background: var(--color-line); }
+
+/* Slow-drifting light blobs */
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(6%, 8%) scale(1.08); }
+  66% { transform: translate(-5%, 4%) scale(0.95); }
+}
+.animate-drift { animation: drift 22s ease-in-out infinite; }
+.animate-drift-slow { animation: drift 30s ease-in-out infinite reverse; }
+
+/* Scrollbar (dark) */
+:root:not([data-theme="light"]) ::-webkit-scrollbar { width: 10px; height: 10px; }
+:root:not([data-theme="light"]) ::-webkit-scrollbar-track { background: var(--color-ink); }
+:root:not([data-theme="light"]) ::-webkit-scrollbar-thumb { background: linear-gradient(var(--color-cyan), var(--color-magenta)); border-radius: 10px; border: 3px solid var(--color-ink); }
+
+/* Horizontal scrollers on mobile */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* Registration mark used as a decorative accent */
+.reg-mark {
+  width: 22px; height: 22px; border-radius: 9999px;
+  border: 1.5px solid currentColor; position: relative;
+}
+.reg-mark::before, .reg-mark::after {
+  content: ""; position: absolute; background: currentColor;
+}
+.reg-mark::before { left: 50%; top: -6px; bottom: -6px; width: 1.5px; transform: translateX(-50%); }
+.reg-mark::after { top: 50%; left: -6px; right: -6px; height: 1.5px; transform: translateY(-50%); }
+
+/* Theme switch: circular reveal (View Transitions API) */
+::view-transition-old(root),
+::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+
+/* Fallback when View Transitions aren't supported */
+.theme-fade, .theme-fade * {
+  transition: background-color 0.35s ease, border-color 0.35s ease, color 0.35s ease !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

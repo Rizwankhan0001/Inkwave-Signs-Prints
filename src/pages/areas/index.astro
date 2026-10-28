@@ -1,0 +1,29 @@
+---
+import Page from "../../layouts/Page.astro";
+import { AREA_PAGES } from "../../content";
+import { AREAS } from "../../data";
+import { MapPin, ArrowRight } from "lucide-react";
+---
+<Page
+  title="Areas We Serve — Gurugram, Delhi, Faridabad, Noida | Inkwave"
+  description="Sign board and printing services across Gurugram, DLF Cyber City, Golf Course Road, Sohna Road, Manesar, Dwarka, Faridabad and Noida."
+  breadcrumbs={[{ name: "Areas", path: "/areas" }]}
+  current="areas"
+  eyebrow="Areas we serve"
+  h1="Installed across Delhi NCR"
+  lead="Our workshop is in Udyog Vihar, Gurugram. We visit, measure and install across the NCR, and ship bulk orders anywhere in India."
+>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6">
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {AREA_PAGES.map((a) => (
+        <a href={`/areas/${a.slug}`} class="card group flex flex-col rounded-3xl p-6 transition hover:-translate-y-1 hover:border-fg/25">
+          <MapPin className="h-6 w-6 text-magenta" />
+          <h2 class="mt-4 font-display text-lg font-semibold text-fg">{a.name}</h2>
+          <p class="mt-2 flex-1 text-sm leading-relaxed text-mute">{a.intro}</p>
+          <span class="mt-4 flex items-center gap-1 text-sm font-medium text-cyan">View area <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
+        </a>
+      ))}
+    </div>
+    <p class="mt-10 text-sm text-mute">We also serve: {AREAS.join(", ")}.</p>
+  </div>
+</Page>

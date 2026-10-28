@@ -1,0 +1,19 @@
+---
+import Base from "../layouts/Base.astro";
+import App from "../App";
+import { FAQS } from "../data";
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+};
+---
+<Base
+  title="Inkwave Signs & Prints | LED Sign Boards, Name Plates & Printing in Gurugram"
+  description="LED & 3D letter sign boards, acrylic and golden name plates, flex, vinyl and UV printing. Designed, made in-house and installed across Gurugram & Delhi NCR. Free mock-up."
+  path="/"
+  schema={[faqSchema]}
+>
+  <App client:load />
+</Base>

@@ -1,0 +1,140 @@
+---
+import "../index.css";
+import { BRAND } from "../data";
+
+export interface Crumb { name: string; path: string }
+interface Props {
+  title: string;
+  description: string;
+  /** Path of this page, e.g. "/services/led-sign-board" */
+  path?: string;
+  image?: string;
+  /** Extra structured data blocks for this page */
+  schema?: object[];
+  breadcrumbs?: Crumb[];
+  noindex?: boolean;
+}
+
+const { title, description, path = Astro.url.pathname, image = "/og-image.png", schema = [], breadcrumbs, noindex = false } = Astro.props;
+const site = Astro.site!.toString().replace(/\/$/, "");
+// Clean URL: no ".html", no "/index", no trailing slash
+const cleanPath = path.replace(/\.html$/, "").replace(/\/index$/, "/").replace(/(.)\/$/, "$1") || "/";
+const canonical = site + cleanPath;
+const ogImage = image.startsWith("http") ? image : site + image;
+
+const GA_ID = import.meta.env.PUBLIC_GA_ID;
+const GSC = import.meta.env.PUBLIC_GSC_VERIFICATION;
+const BING = import.meta.env.PUBLIC_BING_VERIFICATION;
+
+const business = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "@id": `${site}/#business`,
+  name: BRAND.full,
+  description: "Signage, printing and branding studio in Gurugram — LED sign boards, 3D letters, name plates, flex, vinyl and UV printing.",
+  url: `${site}/`,
+  telephone: "+91-98765-43210",
+  email: BRAND.email,
+  image: `${site}/og-image.png`,
+  logo: `${site}/apple-touch-icon.png`,
+  priceRange: "₹₹",
+  address: { "@type": "PostalAddress", streetAddress: "Plot 24, Udyog Vihar Phase 4", addressLocality: "Gurugram", addressRegion: "Haryana", postalCode: "122015", addressCountry: "IN" },
+  geo: { "@type": "GeoCoordinates", latitude: 28.5006, longitude: 77.0867 },
+  openingHoursSpecification: [{ "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "09:30", closes: "20:00" }],
+  areaServed: ["Gurugram", "New Delhi", "Faridabad", "Noida", "Manesar"],
+  sameAs: [],
+};
+
+const crumbSchema = breadcrumbs && {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [{ name: "Home", path: "/" }, ...breadcrumbs].map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, item: site + c.path })),
+};
+
+const blocks = [business, ...(crumbSchema ? [crumbSchema] : []), ...schema];
+---
+<!doctype html>
+<html lang="en-IN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="geo.region" content="IN-HR" />
+    <meta name="geo.placename" content="Gurugram" />
+    <meta name="theme-color" content="#0b0b14" />
+
+    <!-- Set the theme before first paint so there's no flash -->
+    <script is:inline>
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem("inkwave-theme"); } catch (e) {}
+        if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.dataset.theme = t;
+        if (t === "light") document.querySelector('meta[name="theme-color"]').setAttribute("content", "#f6f5f1");
+      })();
+    </script>
+
+    <!-- Link previews -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={BRAND.full} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_IN" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    {GSC && <meta name="google-site-verification" content={GSC} />}
+    {BING && <meta name="msvalidate.01" content={BING} />}
+
+    {blocks.map((b) => <script type="application/ld+json" set:html={JSON.stringify(b)} />)}
+
+    {GA_ID && (
+      <>
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}></script>
+        <script is:inline define:vars={{ GA_ID }}>
+          window.dataLayer = window.dataLayer || [];
+          function gtag() { dataLayer.push(arguments); }
+          window.gtag = gtag;
+          gtag("js", new Date());
+          gtag("config", GA_ID);
+        </script>
+      </>
+    )}
+    <!-- Card spotlight: tell each card where the pointer is (used by the dark theme glow) -->
+    <script is:inline>
+      if (matchMedia("(hover: hover)").matches) {
+        document.addEventListener("pointermove", function (e) {
+          var c = e.target.closest && e.target.closest(".card");
+          if (!c) return;
+          var r = c.getBoundingClientRect();
+          c.style.setProperty("--mx", e.clientX - r.left + "px");
+          c.style.setProperty("--my", e.clientY - r.top + "px");
+        }, { passive: true });
+      }
+    </script>
+    <!-- Count calls, WhatsApp and email clicks as leads in analytics -->
+    <script is:inline>
+      document.addEventListener("click", function (e) {
+        var a = e.target.closest && e.target.closest("a[href]");
+        if (!a || !window.gtag) return;
+        var h = a.getAttribute("href");
+        var type = h.indexOf("tel:") === 0 ? "call" : h.indexOf("wa.me") > -1 ? "whatsapp" : h.indexOf("mailto:") === 0 ? "email" : h.indexOf("google.com/maps") > -1 ? "directions" : null;
+        if (type) window.gtag("event", "generate_lead", { method: type, page: location.pathname });
+      });
+    </script>
+  </head>
+  <body>
+    <noscript><p style="padding:16px;font-family:sans-serif">{BRAND.full} — call {BRAND.phone} for signage &amp; printing in Gurugram.</p></noscript>
+    <slot />
+  </body>
+</html>

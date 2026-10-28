@@ -1,0 +1,53 @@
+---
+import Page from "../../layouts/Page.astro";
+import { SERVICES, serviceUrl, type Category } from "../../data";
+import { CATEGORY_INFO, SERVICE_DETAILS } from "../../details";
+import { accentClass } from "../../components/ui";
+import { ArrowRight } from "lucide-react";
+
+const CATS: Category[] = ["Signage", "Printing", "Name Plates", "Display"];
+const site = Astro.site!.toString().replace(/\/$/, "");
+const schema = [{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  itemListElement: SERVICES.map((s, i) => ({ "@type": "ListItem", position: i + 1, name: s.title, url: site + serviceUrl(s.title) })),
+}];
+---
+<Page
+  title="Signage & Printing Services in Gurugram — 16 Products | Inkwave"
+  description="LED sign boards, 3D letters, neon, flex, vinyl, UV & digital printing, name plates and display systems. Prices, turnaround and warranty for every product."
+  breadcrumbs={[{ name: "Services", path: "/services" }]}
+  schema={schema}
+  current="services"
+  eyebrow="Services"
+  h1="Signage & printing services"
+  lead={CATEGORY_INFO.All}
+>
+  <div class="mx-auto max-w-7xl space-y-16 px-4 sm:px-6">
+    {CATS.map((c) => (
+      <section aria-labelledby={`cat-${c}`}>
+        <div class="flex flex-col gap-2 border-b border-line pb-4 sm:flex-row sm:items-end sm:justify-between">
+          <h2 id={`cat-${c}`} class="font-display text-2xl font-bold text-fg sm:text-3xl">{c}</h2>
+          <p class="max-w-xl text-sm text-mute">{CATEGORY_INFO[c]}</p>
+        </div>
+        <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {SERVICES.filter((s) => s.category === c).map((s) => {
+            const a = accentClass[s.accent];
+            return (
+              <a href={serviceUrl(s.title)} class="card group flex flex-col rounded-3xl p-6 transition hover:-translate-y-1 hover:border-fg/25">
+                <span class={`grid h-12 w-12 place-items-center rounded-2xl ${a.bg} ${a.text}`}><s.icon className="h-6 w-6" /></span>
+                <h3 class="mt-5 font-display text-xl font-semibold text-fg">{s.title}</h3>
+                <p class="mt-1 text-sm font-medium text-fg/80">{SERVICE_DETAILS[s.title].tagline}</p>
+                <p class="mt-2 flex-1 text-sm leading-relaxed text-mute">{s.desc}</p>
+                <div class="mt-5 flex items-center justify-between border-t border-line pt-4 text-sm">
+                  <span class="text-fg">from <b class={a.text}>₹{s.from.toLocaleString("en-IN")}</b><span class="text-mute">/{s.unit}</span></span>
+                  <span class="flex items-center gap-1 font-medium text-cyan">Details <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      </section>
+    ))}
+  </div>
+</Page>

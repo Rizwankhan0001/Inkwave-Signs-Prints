@@ -1,0 +1,53 @@
+---
+/* Shell for inner pages: nav, breadcrumbs, page header, CTA band, footer. */
+import Base, { type Crumb } from "./Base.astro";
+import Navbar from "../components/Navbar";
+import Footer, { CtaBand } from "../components/Footer";
+import WhatsAppFab from "../components/WhatsAppFab";
+
+interface Props {
+  title: string;
+  description: string;
+  breadcrumbs: Crumb[];
+  schema?: object[];
+  /** Which menu item to highlight */
+  current?: string;
+  eyebrow?: string;
+  h1: string;
+  lead?: string;
+  noindex?: boolean;
+}
+const { title, description, breadcrumbs, schema, current, eyebrow, h1, lead, noindex } = Astro.props;
+---
+<Base title={title} description={description} breadcrumbs={breadcrumbs} schema={schema} noindex={noindex}>
+  <a href="#main" class="sr-only z-[100] rounded-full bg-fg px-4 py-2 text-sm font-semibold text-ink focus:not-sr-only focus:fixed focus:left-4 focus:top-4">Skip to content</a>
+  <Navbar client:load current={current} />
+  <main id="main">
+    <header class="relative overflow-hidden pb-10 pt-32 sm:pb-14 sm:pt-40 md:pt-44">
+      <div class="grid-bg pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_top,black_30%,transparent_70%)]"></div>
+      <div class="pointer-events-none absolute -top-40 left-1/4 h-[420px] w-[420px] rounded-full bg-magenta/15 blur-[120px] light:bg-magenta/10"></div>
+      <div class="pointer-events-none absolute right-0 top-10 h-[360px] w-[360px] rounded-full bg-cyan/15 blur-[120px] light:bg-cyan/10"></div>
+      <div class="relative mx-auto max-w-7xl px-4 sm:px-6">
+        <nav aria-label="Breadcrumb" class="mb-6 text-sm text-mute">
+          <ol class="flex flex-wrap items-center gap-1.5">
+            <li><a href="/" class="transition hover:text-fg">Home</a></li>
+            {breadcrumbs.map((c, i) => (
+              <li class="flex items-center gap-1.5">
+                <span aria-hidden="true">/</span>
+                {i === breadcrumbs.length - 1 ? <span class="text-fg" aria-current="page">{c.name}</span> : <a href={c.path} class="transition hover:text-fg">{c.name}</a>}
+              </li>
+            ))}
+          </ol>
+        </nav>
+        {eyebrow && <div class="mb-4 text-xs font-semibold uppercase tracking-[0.2em] text-cyan">{eyebrow}</div>}
+        <h1 class="max-w-4xl text-balance font-display text-4xl font-bold leading-[1.05] tracking-tight text-fg sm:text-5xl md:text-6xl">{h1}</h1>
+        {lead && <p class="mt-5 max-w-2xl text-pretty text-base leading-relaxed text-mute sm:text-lg">{lead}</p>}
+        <slot name="hero" />
+      </div>
+    </header>
+    <slot />
+    <div class="py-16 sm:py-20"><CtaBand /></div>
+  </main>
+  <Footer client:visible />
+  <WhatsAppFab client:idle />
+</Base>

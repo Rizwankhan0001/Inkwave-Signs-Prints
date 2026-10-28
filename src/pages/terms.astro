@@ -1,0 +1,18 @@
+---
+import Page from "../layouts/Page.astro";
+import { BRAND } from "../data";
+---
+<Page title="Terms of Service | Inkwave Signs & Prints" description="Terms for quotes, orders, payments, installation and warranty at Inkwave Signs & Prints." breadcrumbs={[{ name: "Terms", path: "/terms" }]} h1="Terms of service" lead="Last updated: 28 October 2026">
+  <div class="mx-auto max-w-3xl space-y-6 px-4 leading-relaxed text-fg/80 sm:px-6">
+    <h2 class="font-display text-xl font-bold text-fg">Estimates & quotes</h2>
+    <p>Prices shown on this website and in the instant estimator are indicative and exclude GST. A final written quote is issued after we confirm size, materials and site conditions.</p>
+    <h2 class="font-display text-xl font-bold text-fg">Orders & payment</h2>
+    <p>Production starts after design approval and the agreed advance payment. The balance is due on delivery or installation unless agreed otherwise in writing. GST invoices are provided for all orders.</p>
+    <h2 class="font-display text-xl font-bold text-fg">Installation</h2>
+    <p>The customer is responsible for permission from the landlord, society or authorities where required, and for providing a safe working area and electrical point. Additional site work is quoted separately.</p>
+    <h2 class="font-display text-xl font-bold text-fg">Warranty</h2>
+    <p>Warranty periods are listed for each product and cover manufacturing defects in LEDs, drivers and materials under normal use. They do not cover damage from accidents, vandalism, power surges or third-party alterations.</p>
+    <h2 class="font-display text-xl font-bold text-fg">Contact</h2>
+    <p>Questions about these terms: <a class="text-cyan underline" href={`mailto:${BRAND.email}`}>{BRAND.email}</a> · {BRAND.phone}</p>
+  </div>
+</Page>

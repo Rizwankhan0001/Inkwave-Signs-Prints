@@ -1,0 +1,202 @@
+---
+import Page from "../../layouts/Page.astro";
+import { BRAND, INDUSTRIES, PROCESS, SERVICES, SERVICE_SLUGS, inSentence, industryUrl, serviceUrl } from "../../data";
+import { SERVICE_DETAILS } from "../../details";
+import { GUIDES, SERVICE_GUIDES, serviceFaqs } from "../../content";
+import { accentClass } from "../../components/ui";
+import { Check, Clock, ShieldCheck, Hourglass, Calculator, MessageCircle, ArrowRight, ChevronDown, BookOpen } from "lucide-react";
+
+export function getStaticPaths() {
+  return SERVICES.map((s) => ({ params: { slug: SERVICE_SLUGS[s.title] }, props: { title: s.title } }));
+}
+
+const { title } = Astro.props;
+const s = SERVICES.find((x) => x.title === title)!;
+const d = SERVICE_DETAILS[title];
+const g = SERVICE_GUIDES[title];
+const a = accentClass[s.accent];
+const slug = SERVICE_SLUGS[title];
+const faqs = [...g.faqs, ...serviceFaqs(title, s.from, s.unit, d.turnaround, d.warranty)];
+const industries = INDUSTRIES.filter((i) => i.products.includes(title));
+const related = SERVICES.filter((x) => x.category === s.category && x.title !== title);
+const guides = GUIDES.filter((x) => x.related.includes(title));
+const wa = `https://wa.me/${BRAND.phoneRaw}?text=${encodeURIComponent(`Hi! I'm interested in ${title}. Can you share options and pricing?`)}`;
+const site = Astro.site!.toString().replace(/\/$/, "");
+
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: title,
+    serviceType: title,
+    description: g.seoDescription,
+    url: site + serviceUrl(title),
+    provider: { "@id": `${site}/#business` },
+    areaServed: ["Gurugram", "Delhi", "Faridabad", "Noida", "Manesar"],
+    offers: { "@type": "Offer", priceCurrency: "INR", price: s.from, priceSpecification: { "@type": "UnitPriceSpecification", price: s.from, priceCurrency: "INR", unitText: s.unit } },
+  },
+  { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+];
+---
+<Page
+  title={g.seoTitle}
+  description={g.seoDescription}
+  breadcrumbs={[{ name: "Services", path: "/services" }, { name: title, path: serviceUrl(title) }]}
+  schema={schema}
+  current="services"
+  eyebrow={s.category}
+  h1={g.h1}
+  lead={`${d.tagline} ${s.desc}`}
+>
+  <Fragment slot="hero">
+    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+      <a href={`/?service=${slug}#quote`} class="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-magenta to-yellow px-6 py-3.5 font-semibold text-onaccent transition hover:brightness-110">
+        <Calculator className="h-4 w-4" /> Get an instant estimate
+      </a>
+      <a href={wa} target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-full border border-line bg-fg/5 px-6 py-3.5 font-semibold text-fg transition hover:bg-fg/10">
+        <MessageCircle className="h-4 w-4 text-[#25D366]" /> Ask on WhatsApp
+      </a>
+    </div>
+    <dl class="mt-8 grid max-w-2xl grid-cols-2 gap-2 sm:grid-cols-4">
+      {[
+        ["From", `₹${s.from.toLocaleString("en-IN")}/${s.unit}`],
+        ["Ready in", d.turnaround],
+        ["Warranty", d.warranty],
+        ["Lasts", d.life],
+      ].map(([k, v]) => (
+        <div class="card rounded-2xl px-4 py-3">
+          <dt class="text-[11px] uppercase tracking-wider text-mute">{k}</dt>
+          <dd class="mt-0.5 text-sm font-semibold text-fg">{v}</dd>
+        </div>
+      ))}
+    </dl>
+  </Fragment>
+
+  <div class="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_340px] lg:gap-14">
+    <article class="min-w-0">
+      <section>
+        <h2 class="font-display text-2xl font-bold text-fg sm:text-3xl">About our {inSentence(title)}</h2>
+        {[d.overview, ...g.body].map((p) => <p class="mt-4 leading-relaxed text-fg/80 sm:text-lg">{p}</p>)}
+      </section>
+
+      <section class="mt-12">
+        <h2 class="font-display text-2xl font-bold text-fg">What's included</h2>
+        <ul class="mt-5 grid gap-3 sm:grid-cols-2">
+          {d.features.map((f) => (
+            <li class="card flex gap-3 rounded-2xl p-4 text-fg/90">
+              <span class={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full ${a.bg} ${a.text}`}><Check className="h-3.5 w-3.5" strokeWidth={3} /></span>
+              {f}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="mt-12 grid gap-8 sm:grid-cols-2">
+        <div>
+          <h2 class="font-display text-xl font-bold text-fg">Materials & finishes</h2>
+          <div class="mt-4 flex flex-wrap gap-2">{d.materials.map((m) => <span class="rounded-full border border-line px-3 py-1.5 text-sm text-fg/85">{m}</span>)}</div>
+        </div>
+        <div>
+          <h2 class="font-display text-xl font-bold text-fg">Perfect for</h2>
+          <div class="mt-4 flex flex-wrap gap-2">{d.idealFor.map((m) => <span class="rounded-full bg-fg/5 px-3 py-1.5 text-sm text-fg/85">{m}</span>)}</div>
+        </div>
+      </section>
+
+      <section class="mt-12">
+        <h2 class="font-display text-2xl font-bold text-fg">What affects the price</h2>
+        <p class="mt-3 text-mute">Prices start at ₹{s.from.toLocaleString("en-IN")} per {s.unit} + GST. Your exact quote depends on:</p>
+        <ol class="mt-5 space-y-3">
+          {g.priceFactors.map((f, i) => (
+            <li class="flex items-center gap-4">
+              <span class="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-line font-display text-sm font-bold text-cyan">{i + 1}</span>
+              <span class="text-fg/90">{f}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section class="mt-12">
+        <h2 class="font-display text-2xl font-bold text-fg">How it works</h2>
+        <ol class="mt-5 grid gap-4 sm:grid-cols-2">
+          {PROCESS.map((p) => (
+            <li class="card rounded-2xl p-5">
+              <span class="font-display text-sm font-bold text-magenta">{p.step}</span>
+              <h3 class="mt-2 font-display text-lg font-semibold text-fg">{p.title}</h3>
+              <p class="mt-1 text-sm leading-relaxed text-mute">{p.desc}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section class="mt-12">
+        <h2 class="font-display text-2xl font-bold text-fg">{title}: frequently asked questions</h2>
+        <div class="mt-5 divide-y divide-line border-y border-line">
+          {faqs.map((f, i) => (
+            <details class="group py-1" open={i === 0}>
+              <summary class="flex cursor-pointer list-none items-center justify-between gap-6 py-4 font-display text-base font-medium text-fg sm:text-lg [&::-webkit-details-marker]:hidden">
+                {f.q}
+                <ChevronDown className="h-5 w-5 shrink-0 text-cyan transition-transform group-open:rotate-180" />
+              </summary>
+              <p class="pb-4 leading-relaxed text-mute">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+    </article>
+
+    <!-- Sidebar -->
+    <aside class="space-y-4 lg:sticky lg:top-24 lg:self-start">
+      <div class="card overflow-hidden rounded-3xl">
+        <div class={`flex items-center gap-3 border-b border-line p-5 ${a.bg}`}>
+          <span class={`grid h-12 w-12 place-items-center rounded-2xl bg-ink/60 ${a.text}`}><s.icon className="h-6 w-6" /></span>
+          <div>
+            <div class="text-xs text-mute">Starting from</div>
+            <div class="font-display text-2xl font-bold text-fg">₹{s.from.toLocaleString("en-IN")}<span class="text-sm font-normal text-mute">/{s.unit}</span></div>
+          </div>
+        </div>
+        <ul class="space-y-3 p-5 text-sm">
+          <li class="flex items-center gap-3 text-fg/85"><Clock className="h-4 w-4 text-cyan" /> Ready in {d.turnaround}</li>
+          <li class="flex items-center gap-3 text-fg/85"><ShieldCheck className="h-4 w-4 text-magenta" /> {d.warranty} warranty</li>
+          <li class="flex items-center gap-3 text-fg/85"><Hourglass className="h-4 w-4 text-yellow" /> Lasts {d.life}</li>
+        </ul>
+        <div class="grid gap-2 p-5 pt-0">
+          <a href={`/?service=${slug}#quote`} class="flex items-center justify-center gap-2 rounded-full bg-fg py-3 text-sm font-semibold text-ink transition hover:bg-yellow hover:text-onaccent">Calculate my price</a>
+          <a href={`tel:${BRAND.phoneRaw}`} class="flex items-center justify-center gap-2 rounded-full border border-line py-3 text-sm font-semibold text-fg transition hover:bg-fg/5">Call {BRAND.phone}</a>
+        </div>
+      </div>
+
+      {related.length > 0 && (
+        <nav class="card rounded-3xl p-5" aria-label={`More ${inSentence(s.category)} services`}>
+          <h2 class="font-display text-sm font-semibold uppercase tracking-wider text-mute">More {s.category}</h2>
+          <ul class="mt-3 space-y-1">
+            {related.map((r) => (
+              <li><a href={serviceUrl(r.title)} class="flex items-center justify-between rounded-xl px-2 py-2 text-sm text-fg/85 transition hover:bg-fg/5 hover:text-fg">{r.title}<ArrowRight className="h-4 w-4 text-mute" /></a></li>
+            ))}
+          </ul>
+        </nav>
+      )}
+
+      {industries.length > 0 && (
+        <nav class="card rounded-3xl p-5" aria-label="Industries">
+          <h2 class="font-display text-sm font-semibold uppercase tracking-wider text-mute">Popular with</h2>
+          <ul class="mt-3 space-y-1">
+            {industries.map((i) => (
+              <li><a href={industryUrl(i.title)} class="flex items-center gap-2 rounded-xl px-2 py-2 text-sm text-fg/85 transition hover:bg-fg/5 hover:text-fg"><i.icon className="h-4 w-4 text-cyan" />{i.title}</a></li>
+            ))}
+          </ul>
+        </nav>
+      )}
+
+      {guides.length > 0 && (
+        <nav class="card rounded-3xl p-5" aria-label="Guides">
+          <h2 class="font-display text-sm font-semibold uppercase tracking-wider text-mute">Read before you buy</h2>
+          <ul class="mt-3 space-y-1">
+            {guides.map((x) => (
+              <li><a href={`/guides/${x.slug}`} class="flex gap-2 rounded-xl px-2 py-2 text-sm text-fg/85 transition hover:bg-fg/5 hover:text-fg"><BookOpen className="mt-0.5 h-4 w-4 shrink-0 text-yellow" />{x.title}</a></li>
+            ))}
+          </ul>
+        </nav>
+      )}
+    </aside>
+  </div>
+</Page>

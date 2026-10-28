@@ -1,0 +1,10 @@
+---
+import Page from "../layouts/Page.astro";
+---
+<Page title="Page not found | Inkwave Signs & Prints" description="This page doesn't exist." breadcrumbs={[{ name: "Not found", path: "/404" }]} h1="This sign seems to be switched off." lead="The page you're looking for doesn't exist or has moved." noindex>
+  <div class="mx-auto flex max-w-7xl flex-wrap gap-3 px-4 sm:px-6">
+    <a href="/" class="rounded-full bg-fg px-6 py-3 font-semibold text-ink">Go to home</a>
+    <a href="/services" class="rounded-full border border-line px-6 py-3 font-semibold text-fg">Browse services</a>
+    <a href="/guides" class="rounded-full border border-line px-6 py-3 font-semibold text-fg">Price guides</a>
+  </div>
+</Page>
