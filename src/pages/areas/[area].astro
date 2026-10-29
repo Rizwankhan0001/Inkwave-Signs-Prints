@@ -1,0 +1,88 @@
+---
+import Page from "../../layouts/Page.astro";
+import QuoteForm from "../../components/QuoteForm.astro";
+import MobileBar from "../../components/MobileBar.astro";
+import { accentClass } from "../../components/ui";
+import { BRAND, SERVICES, serviceUrl } from "../../data";
+import { AREAS_LOCAL, areaBySlug, areaLabel, areaUrl, localFor, localUrl, visitTime, type Area } from "../../areas";
+import { Truck, MapPin, Phone, MessageCircle, ArrowRight } from "lucide-react";
+
+export function getStaticPaths() {
+  return AREAS_LOCAL.map((a) => ({ params: { area: a.slug }, props: { area: a } }));
+}
+interface Props { area: Area }
+const { area } = Astro.props;
+const place = areaLabel(area);
+const { visit } = visitTime(area.km);
+const nearby = area.nearby.map(areaBySlug);
+const distanceText = area.km <= 1 ? "Our workshop is here" : `${area.km} km from our workshop`;
+const site = Astro.site!.toString().replace(/\/$/, "");
+const schema = [{
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: `Sign boards & printing in ${place}`,
+  provider: { "@id": `${site}/#business` },
+  areaServed: { "@type": "Place", name: place },
+  url: site + areaUrl(area.slug),
+}];
+const wa = `https://wa.me/${BRAND.phoneRaw}?text=${encodeURIComponent(`Hi! I need signage/printing in ${area.name}.`)}`;
+---
+<Page
+  title={`Sign Board Maker in ${place} | Inkwave`.length <= 60 ? `Sign Board Maker in ${place} | Inkwave` : `Sign Board Maker in ${area.name} | Inkwave`}
+  description={`Sign boards, name plates & printing in ${area.name}. ${visit}, free mock-up and installation. Call ${BRAND.phone}.`}
+  breadcrumbs={[{ name: "Areas", path: "/areas" }, { name: area.name, path: areaUrl(area.slug) }]}
+  schema={schema}
+  eyebrow={`Service area · ${area.region}`}
+  h1={`Sign boards & printing in ${place}`}
+  lead={area.blurb}
+>
+  <Fragment slot="hero">
+    <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-fg/85">
+      <li class="flex items-center gap-1.5"><Truck className="h-4 w-4 text-magenta" /> {visit}</li>
+      <li class="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-cyan" /> {distanceText}</li>
+    </ul>
+    <div class="mt-7 flex flex-col gap-3 sm:flex-row">
+      <a href={`tel:${BRAND.phoneRaw}`} class="inline-flex items-center justify-center gap-2 rounded-full bg-fg px-6 py-3 font-semibold text-ink transition hover:bg-magenta"><Phone className="h-4 w-4" /> Call {BRAND.phone}</a>
+      <a href={wa} target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-3 font-semibold text-white"><MessageCircle className="h-4 w-4" /> WhatsApp us</a>
+    </div>
+  </Fragment>
+
+  <div class="mx-auto max-w-6xl space-y-14 px-4 sm:px-6">
+    <section>
+      <h2 class="font-display text-2xl font-bold text-fg">Our services in {area.name}</h2>
+      <p class="mt-2 text-mute">We mostly work with {area.mix} here.</p>
+      <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
+        {SERVICES.map((s) => {
+          const l = localFor(s.title);
+          const a = accentClass[s.accent];
+          const href = l ? localUrl(l.slug, area.slug) : serviceUrl(s.title);
+          const label = l ? l.keyword + " in " + area.name : s.title;
+          return (
+            <a href={href} class="flex flex-col rounded-2xl border border-line p-4 transition hover:shadow-md">
+              <span class={`grid h-10 w-10 place-items-center rounded-xl ${a.bg} ${a.text}`}><s.icon className="h-5 w-5" /></span>
+              <span class="mt-3 font-display font-semibold leading-snug text-fg">{label}</span>
+              <span class="mt-auto pt-2 text-xs text-mute">from ₹{s.from.toLocaleString("en-IN")}/{s.unit}</span>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+
+    <div class="grid gap-8 lg:grid-cols-2">
+      <QuoteForm area={area.name} heading={`Get a free quote in ${area.name}`} />
+      <div class="min-h-[300px] overflow-hidden rounded-2xl border border-line">
+        <iframe title={`Map of ${place}`} src={`https://maps.google.com/maps?q=${encodeURIComponent(place + ", India")}&z=13&output=embed`} class="h-full min-h-[300px] w-full border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+
+    <section>
+      <h2 class="font-display text-2xl font-bold text-fg">Where we work in {area.name}</h2>
+      <p class="mt-3 text-mute">Including {area.landmarks.join(", ")} and surrounding sectors. {visit}; measurement and design mock-up are free.</p>
+      <h3 class="mt-8 font-display text-lg font-bold text-fg">Nearby areas</h3>
+      <div class="mt-3 flex flex-wrap gap-2">
+        {nearby.map((n) => <a href={areaUrl(n.slug)} class="flex items-center gap-1.5 rounded-full border border-line px-4 py-2 text-sm text-fg/85 hover:border-fg/30">{n.name} <ArrowRight className="h-3.5 w-3.5" /></a>)}
+      </div>
+    </section>
+  </div>
+  <MobileBar />
+</Page>

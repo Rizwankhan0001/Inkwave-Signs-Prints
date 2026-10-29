@@ -1,0 +1,12 @@
+---
+/* Phones: Call / WhatsApp / Quote bar fixed to the bottom of the screen. */
+import { BRAND } from "../data";
+import { Phone } from "lucide-react";
+interface Props { quoteHref?: string }
+const { quoteHref = "#quote-form" } = Astro.props;
+---
+<nav aria-label="Quick contact" class="fixed inset-x-0 bottom-0 z-50 grid grid-cols-3 border-t border-line bg-ink/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+  <a href={`tel:${BRAND.phoneRaw}`} class="flex items-center justify-center gap-1.5 py-3 text-sm font-semibold text-fg"><Phone className="h-4 w-4" /> Call</a>
+  <a href={`https://wa.me/${BRAND.phoneRaw}?text=${encodeURIComponent("Hi! I'd like a quote.")}`} target="_blank" rel="noopener" class="bg-[#25D366] py-3 text-center text-sm font-semibold text-white">WhatsApp</a>
+  <a href={quoteHref} class="bg-fg py-3 text-center text-sm font-semibold text-ink">Get price</a>
+</nav>

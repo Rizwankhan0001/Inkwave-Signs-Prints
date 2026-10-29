@@ -1,6 +1,9 @@
 ---
 import "../index.css";
-import { BRAND } from "../data";
+import { BRAND, SERVICES, SOCIALS, serviceUrl } from "../data";
+import { AREAS_LOCAL } from "../areas";
+import interFont from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+import displayFont from "@fontsource-variable/space-grotesk/files/space-grotesk-latin-wght-normal.woff2?url";
 
 export interface Crumb { name: string; path: string }
 interface Props {
@@ -41,8 +44,18 @@ const business = {
   address: { "@type": "PostalAddress", streetAddress: "Plot 24, Udyog Vihar Phase 4", addressLocality: "Gurugram", addressRegion: "Haryana", postalCode: "122015", addressCountry: "IN" },
   geo: { "@type": "GeoCoordinates", latitude: 28.5006, longitude: 77.0867 },
   openingHoursSpecification: [{ "@type": "OpeningHoursSpecification", dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "09:30", closes: "20:00" }],
-  areaServed: ["Gurugram", "New Delhi", "Faridabad", "Noida", "Manesar"],
-  sameAs: [],
+  areaServed: AREAS_LOCAL.map((a) => ({ "@type": "Place", name: a.name })),
+  // Real profile links only (placeholders "#" are skipped)
+  sameAs: Object.values(SOCIALS).filter((u) => u.startsWith("http")),
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Signage & printing services",
+    itemListElement: SERVICES.map((s) => ({
+      "@type": "Offer",
+      itemOffered: { "@type": "Service", name: s.title, url: site + serviceUrl(s.title) },
+      priceSpecification: { "@type": "UnitPriceSpecification", price: s.from, priceCurrency: "INR", unitText: s.unit },
+    })),
+  },
 };
 
 const crumbSchema = breadcrumbs && {
@@ -51,7 +64,9 @@ const crumbSchema = breadcrumbs && {
   itemListElement: [{ name: "Home", path: "/" }, ...breadcrumbs].map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, item: site + c.path })),
 };
 
-const blocks = [business, ...(crumbSchema ? [crumbSchema] : []), ...schema];
+const website = { "@context": "https://schema.org", "@type": "WebSite", "@id": `${site}/#website`, name: BRAND.full, url: `${site}/`, publisher: { "@id": `${site}/#business` }, inLanguage: "en-IN" };
+
+const blocks = [business, website, ...(crumbSchema ? [crumbSchema] : []), ...schema];
 ---
 <!doctype html>
 <html lang="en-IN">
@@ -61,21 +76,12 @@ const blocks = [business, ...(crumbSchema ? [crumbSchema] : []), ...schema];
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex, follow" />}
+    <meta name="robots" content={noindex ? "noindex, follow" : "index, follow, max-image-preview:large, max-snippet:-1"} />
+    <link rel="preload" href={interFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={displayFont} as="font" type="font/woff2" crossorigin />
     <meta name="geo.region" content="IN-HR" />
     <meta name="geo.placename" content="Gurugram" />
-    <meta name="theme-color" content="#0b0b14" />
-
-    <!-- Set the theme before first paint so there's no flash -->
-    <script is:inline>
-      (function () {
-        var t = null;
-        try { t = localStorage.getItem("inkwave-theme"); } catch (e) {}
-        if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
-        document.documentElement.dataset.theme = t;
-        if (t === "light") document.querySelector('meta[name="theme-color"]').setAttribute("content", "#f6f5f1");
-      })();
-    </script>
+    <meta name="theme-color" content="#ffffff" />
 
     <!-- Link previews -->
     <meta property="og:type" content="website" />
@@ -110,18 +116,6 @@ const blocks = [business, ...(crumbSchema ? [crumbSchema] : []), ...schema];
         </script>
       </>
     )}
-    <!-- Card spotlight: tell each card where the pointer is (used by the dark theme glow) -->
-    <script is:inline>
-      if (matchMedia("(hover: hover)").matches) {
-        document.addEventListener("pointermove", function (e) {
-          var c = e.target.closest && e.target.closest(".card");
-          if (!c) return;
-          var r = c.getBoundingClientRect();
-          c.style.setProperty("--mx", e.clientX - r.left + "px");
-          c.style.setProperty("--my", e.clientY - r.top + "px");
-        }, { passive: true });
-      }
-    </script>
     <!-- Count calls, WhatsApp and email clicks as leads in analytics -->
     <script is:inline>
       document.addEventListener("click", function (e) {

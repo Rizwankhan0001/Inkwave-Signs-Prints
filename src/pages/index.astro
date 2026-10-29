@@ -1,19 +1,209 @@
 ---
 import Base from "../layouts/Base.astro";
-import App from "../App";
-import { FAQS } from "../data";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import WhatsAppButton from "../components/WhatsAppButton.astro";
+import SignArt from "../components/SignArt.astro";
+import WorkArt from "../components/WorkArt.astro";
+import QuoteForm from "../components/QuoteForm.astro";
+import { accentClass } from "../components/ui";
+import { SERVICE_DETAILS } from "../details";
+import { BRAND, FAQS, PROJECTS, SERVICES, TESTIMONIALS, serviceUrl } from "../data";
+import { AREAS_LOCAL, areaUrl } from "../areas";
+import MobileBar from "../components/MobileBar.astro";
+import { ArrowRight, Phone, MessageCircle, Mail, MapPin, Clock, Factory, PenTool, Zap, ShieldCheck, Star, ChevronDown } from "lucide-react";
 
 const faqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   mainEntity: FAQS.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
 };
+
+const WHY = [
+  { icon: Factory, title: "Made in-house", text: "Our own workshop in Gurugram, so you get better quality and no middlemen." },
+  { icon: PenTool, title: "Free design mock-up", text: "See your sign on a photo of your shop before you pay." },
+  { icon: Zap, title: "Quick delivery", text: "Most prints in 24–48 hours. Signs in about a week." },
+  { icon: ShieldCheck, title: "Installed & guaranteed", text: "Our own team installs it, with a warranty on every job." },
+];
+
+const wa = `https://wa.me/${BRAND.phoneRaw}?text=${encodeURIComponent("Hi! I'd like a quote for a sign / print job.")}`;
+const mapQ = encodeURIComponent(BRAND.address);
+const h2 = "font-display text-3xl font-bold tracking-tight text-fg sm:text-4xl";
 ---
 <Base
-  title="Inkwave Signs & Prints | LED Sign Boards, Name Plates & Printing in Gurugram"
-  description="LED & 3D letter sign boards, acrylic and golden name plates, flex, vinyl and UV printing. Designed, made in-house and installed across Gurugram & Delhi NCR. Free mock-up."
+  title="Sign Board Maker & Printing in Gurugram | Inkwave"
+  description="LED sign boards, 3D letters, name plates, flex & digital printing. Made in-house in Gurugram, installed across Delhi NCR. Free mock-up."
   path="/"
   schema={[faqSchema]}
 >
-  <App client:load />
+  <Header />
+  <main id="main">
+    <!-- Hero -->
+    <section class="mx-auto grid max-w-6xl items-center gap-12 px-4 py-14 sm:px-6 md:py-20 lg:grid-cols-[1.2fr_1fr]">
+      <div>
+        <p class="text-sm font-medium text-magenta">Gurugram &amp; Delhi NCR · since 2014</p>
+        <h1 class="mt-4 font-display text-[2.6rem] font-bold leading-[1.05] tracking-tight text-fg sm:text-6xl">
+          Signs that get <span class="text-gradient">noticed.</span><br />Prints that last.
+        </h1>
+        <p class="mt-5 max-w-lg text-lg leading-relaxed text-mute">
+          LED and 3D sign boards, name plates and all kinds of printing, designed, made and installed by our own team.
+        </p>
+        <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+          <a href="#estimate" class="inline-flex items-center justify-center gap-2 rounded-full bg-fg px-7 py-3.5 font-semibold text-ink transition hover:bg-magenta">
+            Get your price <ArrowRight className="h-4 w-4" />
+          </a>
+          <a href={wa} target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-full border border-line px-7 py-3.5 font-semibold text-fg transition hover:bg-ink-2">
+            <MessageCircle className="h-4 w-4 text-[#25D366]" /> WhatsApp us
+          </a>
+        </div>
+        <ul class="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-mute">
+          <li><b class="text-fg">12+</b> years</li>
+          <li><b class="text-fg">4,800+</b> projects</li>
+          <li><b class="text-fg">Free</b> design mock-up</li>
+        </ul>
+      </div>
+      <SignArt />
+    </section>
+
+    <!-- Services -->
+    <section id="services" class="bg-ink-2 py-16 md:py-24">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <h2 class={h2}>Our services</h2>
+        <p class="mt-3 max-w-xl text-mute">Six services, all made in our own workshop. Tap one for prices and details.</p>
+        <div class="mt-8 grid gap-4 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3">
+          {SERVICES.map((s) => {
+            const a = accentClass[s.accent];
+            return (
+              <a href={serviceUrl(s.title)} class="group flex flex-col rounded-2xl border border-line bg-ink p-5 transition hover:-translate-y-0.5 hover:shadow-md sm:p-6">
+                <span class={`grid h-11 w-11 place-items-center rounded-xl ${a.bg} ${a.text}`}><s.icon className="h-5 w-5" /></span>
+                <h3 class="mt-4 font-display text-xl font-semibold text-fg">{s.title}</h3>
+                <p class="mt-1.5 text-sm leading-relaxed text-mute">{s.desc}</p>
+                <ul class="mt-4 flex flex-1 flex-wrap content-start gap-1.5">
+                  {SERVICE_DETAILS[s.title].types.map((t) => <li class="rounded-full bg-ink-2 px-2.5 py-1 text-xs text-fg/80">{t.name}</li>)}
+                </ul>
+                <p class="mt-5 flex items-center justify-between border-t border-line pt-4 text-sm">
+                  <span class="text-mute">Starting from <b class="text-fg">₹{s.from.toLocaleString("en-IN")}</b>/{s.unit}</span>
+                  <ArrowRight className="h-4 w-4 text-mute transition group-hover:translate-x-0.5 group-hover:text-fg" />
+                </p>
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+
+    <!-- Work -->
+    <section id="work" class="py-16 md:py-24">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <h2 class={h2}>Our work</h2>
+        <p class="mt-3 max-w-xl text-mute">A few recent jobs across Gurugram and Delhi.</p>
+        <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {PROJECTS.map((p) => (
+            <figure>
+              <div class="relative aspect-[4/3] overflow-hidden rounded-2xl"><WorkArt style={p.style} /></div>
+              <figcaption class="mt-3">
+                <div class="font-display font-semibold text-fg">{p.title}</div>
+                <div class="text-sm text-mute">{p.tag} · {p.client}</div>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Get a price -->
+    <section id="estimate" class="bg-ink-2 py-16 md:py-24">
+      <div class="mx-auto grid max-w-6xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-[1fr_1.3fr]">
+        <div>
+          <h2 class={h2}>Get your price in 10 minutes</h2>
+          <p class="mt-3 text-mute">Tell us what you need and where. We'll send an exact price and a free design mock-up on WhatsApp.</p>
+          <ul class="mt-6 space-y-3 text-fg/85">
+            <li>✓ No obligation, no spam</li>
+            <li>✓ Free site visit in Gurugram</li>
+            <li>✓ Better rates for bigger orders</li>
+          </ul>
+          <p class="mt-6 text-sm text-mute">Prefer to talk? Call <a href={`tel:${BRAND.phoneRaw}`} class="font-semibold text-fg">{BRAND.phone}</a></p>
+        </div>
+        <div class="[&_#quote-form]:bg-ink"><QuoteForm heading="What do you need?" /></div>
+      </div>
+    </section>
+
+    <!-- Why us -->
+    <section class="py-16 md:py-24">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <h2 class={h2}>Why choose us</h2>
+        <div class="mt-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          {WHY.map((w) => (
+            <div>
+              <w.icon className="h-7 w-7 text-magenta" strokeWidth={1.6} />
+              <h3 class="mt-4 font-display text-lg font-semibold text-fg">{w.title}</h3>
+              <p class="mt-1.5 text-sm leading-relaxed text-mute">{w.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Reviews -->
+    <section class="bg-ink-2 py-16 md:py-24">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6">
+        <h2 class={h2}>What customers say</h2>
+        <div class="mt-10 grid gap-5 md:grid-cols-3">
+          {TESTIMONIALS.slice(0, 3).map((t) => (
+            <figure class="flex flex-col rounded-2xl border border-line bg-ink p-6">
+              <div class="flex gap-0.5 text-yellow">{Array.from({ length: t.rating }).map(() => <Star className="h-4 w-4 fill-current" />)}</div>
+              <blockquote class="mt-4 flex-1 leading-relaxed text-fg/90">"{t.text}"</blockquote>
+              <figcaption class="mt-5 text-sm"><b class="text-fg">{t.name}</b><span class="block text-mute">{t.role}</span></figcaption>
+            </figure>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="py-16 md:py-24">
+      <div class="mx-auto max-w-3xl px-4 sm:px-6">
+        <h2 class={h2}>Common questions</h2>
+        <div class="mt-8 divide-y divide-line border-y border-line">
+          {FAQS.map((f) => (
+            <details class="group">
+              <summary class="flex cursor-pointer items-center justify-between gap-6 py-5 font-display text-lg font-medium text-fg">
+                {f.q}<ChevronDown className="h-5 w-5 shrink-0 text-mute transition-transform group-open:rotate-180" />
+              </summary>
+              <p class="pb-5 leading-relaxed text-mute">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="bg-ink-2 py-16 md:py-24">
+      <div class="mx-auto grid max-w-6xl gap-10 px-4 sm:px-6 lg:grid-cols-2">
+        <div>
+          <h2 class={h2}>Contact us</h2>
+          <p class="mt-3 text-mute">Call, WhatsApp or visit our workshop. We reply within the hour during working hours.</p>
+          <ul class="mt-8 space-y-5">
+            <li><a href={`tel:${BRAND.phoneRaw}`} class="flex items-center gap-4"><span class="grid h-11 w-11 place-items-center rounded-xl bg-cyan/10 text-cyan"><Phone className="h-5 w-5" /></span><span><span class="block text-sm text-mute">Phone</span><b class="text-fg">{BRAND.phone}</b></span></a></li>
+            <li><a href={wa} target="_blank" rel="noopener" class="flex items-center gap-4"><span class="grid h-11 w-11 place-items-center rounded-xl bg-[#25D366]/10 text-[#16a34a]"><MessageCircle className="h-5 w-5" /></span><span><span class="block text-sm text-mute">WhatsApp</span><b class="text-fg">Send us a message</b></span></a></li>
+            <li><a href={`mailto:${BRAND.email}`} class="flex items-center gap-4"><span class="grid h-11 w-11 place-items-center rounded-xl bg-yellow/10 text-yellow"><Mail className="h-5 w-5" /></span><span><span class="block text-sm text-mute">Email</span><b class="text-fg">{BRAND.email}</b></span></a></li>
+            <li class="flex items-center gap-4"><span class="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-magenta/10 text-magenta"><MapPin className="h-5 w-5" /></span><span><span class="block text-sm text-mute">Workshop</span><b class="text-fg">{BRAND.address}</b></span></li>
+            <li class="flex items-center gap-4"><span class="grid h-11 w-11 place-items-center rounded-xl bg-fg/5 text-fg"><Clock className="h-5 w-5" /></span><span><span class="block text-sm text-mute">Hours</span><b class="text-fg">{BRAND.hours}</b></span></li>
+          </ul>
+          <div class="mt-8">
+            <h3 class="font-display font-semibold text-fg">Areas we serve</h3>
+            <div class="mt-3 flex flex-wrap gap-2">
+              {AREAS_LOCAL.map((a) => <a href={areaUrl(a.slug)} class="rounded-full border border-line bg-ink px-3 py-1.5 text-sm text-fg/80 hover:border-fg/30">{a.name}</a>)}
+            </div>
+          </div>
+        </div>
+        <div class="min-h-[320px] overflow-hidden rounded-2xl border border-line bg-ink">
+          <iframe title="Map to our workshop" src={`https://maps.google.com/maps?q=${mapQ}&z=15&output=embed`} class="h-full min-h-[320px] w-full border-0" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+  <WhatsAppButton />
+  <MobileBar quoteHref="#quote-form" />
 </Base>

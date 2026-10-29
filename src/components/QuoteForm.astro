@@ -1,0 +1,51 @@
+---
+/* Quick enquiry form used on service and area pages.
+   Sends the enquiry on WhatsApp, and also by email when PUBLIC_WEB3FORMS_KEY is set. */
+import { BRAND, SERVICES } from "../data";
+
+interface Props { service?: string; area?: string; heading?: string }
+const { service = "", area = "", heading = "Get your price" } = Astro.props;
+const key = import.meta.env.PUBLIC_WEB3FORMS_KEY || "";
+const field = "w-full rounded-xl border border-line bg-ink px-4 py-3 text-base text-fg outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20";
+---
+<section id="quote-form" class="scroll-mt-24 rounded-2xl border border-line bg-ink-2 p-5 sm:p-8">
+  <h2 class="font-display text-2xl font-bold text-fg">{heading}</h2>
+  <p class="mt-1 text-mute">Exact price on WhatsApp within 10 minutes · free design mock-up.</p>
+  <form class="quote-form mt-5 grid gap-3 sm:grid-cols-2">
+    <input name="name" required placeholder="Your name" aria-label="Your name" class={field} />
+    <input name="phone" type="tel" required pattern="[0-9+\s-]{10,}" placeholder="Phone number" aria-label="Phone number" class={field} />
+    <select name="product" aria-label="What do you need?" class={field}>
+      <option value="">What do you need?</option>
+      {SERVICES.map((s) => <option selected={s.title === service}>{s.title}</option>)}
+    </select>
+    <input name="area" value={area} placeholder="Your area (e.g. Sector 29)" aria-label="Your area" class={field} />
+    <textarea name="message" rows="3" placeholder="Size, quantity or any details (optional)" aria-label="Details" class={`${field} sm:col-span-2`}></textarea>
+    <button class="rounded-full bg-fg px-6 py-3.5 font-semibold text-ink transition hover:bg-magenta sm:col-span-2">Get my price on WhatsApp</button>
+    <p class="quote-done hidden text-sm font-medium text-[#15803d] sm:col-span-2">Thanks! Your enquiry is ready in WhatsApp. Just press send.</p>
+  </form>
+</section>
+
+<script is:inline define:vars={{ phone: BRAND.phoneRaw, brand: BRAND.name, key }}>
+  document.querySelectorAll(".quote-form").forEach(function (form) {
+    if (form.dataset.ready) return;
+    form.dataset.ready = "1";
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var d = Object.fromEntries(new FormData(form));
+      var lines = ["Hi " + brand + "! Please share the price.", "Name: " + d.name, "Phone: " + d.phone];
+      if (d.product) lines.push("Need: " + d.product);
+      if (d.area) lines.push("Area: " + d.area);
+      if (d.message) lines.push("Details: " + d.message);
+      window.open("https://wa.me/" + phone + "?text=" + encodeURIComponent(lines.join("\n")), "_blank", "noopener");
+      if (window.gtag) window.gtag("event", "generate_lead", { method: "form", page: location.pathname });
+      if (key) {
+        fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(Object.assign({ access_key: key, subject: "Website lead: " + (d.product || "enquiry") + (d.area ? " in " + d.area : ""), page: location.href }, d)),
+        }).catch(function () {});
+      }
+      form.querySelector(".quote-done").classList.remove("hidden");
+    });
+  });
+</script>

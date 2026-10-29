@@ -1,0 +1,55 @@
+---
+import { Phone, Menu, X } from "lucide-react";
+import Logo from "./Logo.astro";
+import { BRAND } from "../data";
+
+const LINKS = [
+  { href: "/#services", label: "Services" },
+  { href: "/#work", label: "Our Work" },
+  { href: "/#estimate", label: "Get Price" },
+  { href: "/areas", label: "Areas" },
+  { href: "/#contact", label: "Contact" },
+];
+---
+<header class="sticky top-0 z-50 border-b border-line bg-ink/90 backdrop-blur">
+  <nav class="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:h-[72px] sm:px-6" aria-label="Main">
+    <Logo />
+    <ul class="hidden items-center gap-8 md:flex">
+      {LINKS.map((l) => <li><a href={l.href} class="text-sm font-medium text-mute transition hover:text-fg">{l.label}</a></li>)}
+    </ul>
+    <div class="flex items-center gap-2">
+      <a href={`tel:${BRAND.phoneRaw}`} class="hidden items-center gap-2 rounded-full bg-fg px-5 py-2.5 text-sm font-semibold text-ink transition hover:bg-magenta sm:flex">
+        <Phone className="h-4 w-4" /> {BRAND.phone}
+      </a>
+      <a href={`tel:${BRAND.phoneRaw}`} class="grid h-10 w-10 place-items-center rounded-full bg-fg text-ink sm:hidden" aria-label={`Call ${BRAND.phone}`}><Phone className="h-4 w-4" /></a>
+      <button id="menu-btn" type="button" class="grid h-10 w-10 place-items-center rounded-full border border-line md:hidden" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <Menu className="h-5 w-5 menu-open" />
+        <X className="hidden h-5 w-5 menu-close" />
+      </button>
+    </div>
+  </nav>
+  <div id="mobile-menu" class="hidden border-t border-line bg-ink md:hidden">
+    <ul class="px-4 py-3">
+      {LINKS.map((l) => <li><a href={l.href} class="block rounded-lg px-3 py-3 text-base font-medium text-fg">{l.label}</a></li>)}
+    </ul>
+    <div class="grid grid-cols-2 gap-2 px-4 pb-4">
+      <a href={`tel:${BRAND.phoneRaw}`} class="flex items-center justify-center gap-2 rounded-full bg-fg py-3 text-sm font-semibold text-ink"><Phone className="h-4 w-4" /> Call</a>
+      <a href={`https://wa.me/${BRAND.phoneRaw}`} target="_blank" rel="noopener" class="flex items-center justify-center rounded-full bg-[#25D366] py-3 text-sm font-semibold text-white">WhatsApp</a>
+    </div>
+  </div>
+</header>
+
+<script is:inline>
+  (function () {
+    var btn = document.getElementById("menu-btn");
+    var menu = document.getElementById("mobile-menu");
+    function set(open) {
+      menu.classList.toggle("hidden", !open);
+      btn.setAttribute("aria-expanded", String(open));
+      btn.querySelector(".menu-open").classList.toggle("hidden", open);
+      btn.querySelector(".menu-close").classList.toggle("hidden", !open);
+    }
+    btn.addEventListener("click", function () { set(menu.classList.contains("hidden")); });
+    menu.addEventListener("click", function (e) { if (e.target.closest("a")) set(false); });
+  })();
+</script>

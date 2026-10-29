@@ -1,0 +1,158 @@
+---
+/* Local service pages, e.g. /led-sign-board-in-sector-29-gurugram */
+import Page from "../layouts/Page.astro";
+import QuoteForm from "../components/QuoteForm.astro";
+import MobileBar from "../components/MobileBar.astro";
+import { BRAND, SERVICES, inSentence, serviceUrl } from "../data";
+import { SERVICE_DETAILS } from "../details";
+import { AREAS_LOCAL, LOCAL_SERVICES, MAIN_AREA, areaBySlug, areaLabel, areaUrl, localUrl, visitTime, type Area } from "../areas";
+import { Check, ChevronDown, MapPin, Truck, Clock, ShieldCheck, Phone, MessageCircle } from "lucide-react";
+
+export function getStaticPaths() {
+  return LOCAL_SERVICES.flatMap((l, li) =>
+    AREAS_LOCAL.filter((a) => a.slug !== MAIN_AREA).map((a, ai) => ({ params: { local: `${l.slug}-in-${a.slug}` }, props: { local: l, area: a, variant: (li + ai) % 3 } }))
+  );
+}
+
+interface Props { local: (typeof LOCAL_SERVICES)[number]; area: Area; variant: number }
+const { local, area, variant } = Astro.props;
+const s = SERVICES.find((x) => x.title === local.title)!;
+const d = SERVICE_DETAILS[s.title];
+const place = areaLabel(area);
+const { visit } = visitTime(area.km);
+const kw = local.keyword;
+const kwl = inSentence(kw);
+const svcl = inSentence(s.title);
+const fromLabel = `₹${s.from.toLocaleString("en-IN")}/${s.unit}`;
+const dist = area.km <= 1 ? "right next to our workshop" : `about ${area.km} km from our Udyog Vihar workshop`;
+
+// The product that best fits this area's businesses (simple word match), else the first
+const areaWords = new Set((area.mix + " " + area.blurb).toLowerCase().match(/[a-z]+/g) ?? []);
+const score = (t: { name: string; note: string }) => ((t.name + " " + t.note).toLowerCase().match(/[a-z]+/g) ?? []).filter((w) => w.length > 3 && areaWords.has(w.replace(/s$/, "")) || areaWords.has(w)).length;
+const pick = [...d.types].sort((x, y) => score(y) - score(x))[0];
+const regionNote = {
+  Gurugram: `Our crew works in ${area.name} most days, so follow-up visits and maintenance are quick.`,
+  Delhi: `${area.name} is a short drive across the border, and we install here every week.`,
+  Faridabad: `We combine ${area.name} jobs into scheduled installation runs, so there's no extra travel charge.`,
+  Noida: `We install in ${area.name} on scheduled runs and can match signage with your other NCR offices.`,
+}[area.region];
+
+// Three wordings, rotated across pages so they don't all read the same
+const intros = [
+  `Looking for ${kwl} in ${place}? ${area.blurb} We design, make and install ${svcl} for ${area.mix}, starting at ${fromLabel}.`,
+  `${area.blurb} For ${area.mix} in ${area.name}, our ${svcl} are made in-house and installed by our own crew, ${dist}.`,
+  `We make ${kwl} for ${area.mix} in ${place}, ${dist}. ${area.blurb}`,
+];
+
+const faqs = [
+  { q: `How much does a ${kwl} cost in ${area.name}?`, a: `Prices start at ${fromLabel} + GST, the same as the rest of our service area. Send a photo of your space and we'll share an exact price on WhatsApp.` },
+  { q: `How quickly can you install in ${area.name}?`, a: `${area.name} is ${dist}. We offer a ${visit.toLowerCase()}, and most ${svcl} are ready in ${d.turnaround} after you approve the design.` },
+  { q: `Do you come to ${area.name} to measure?`, a: `Yes, measurement and a design mock-up are free. We regularly work around ${area.landmarks.join(", ")}.` },
+  { q: `Which ${kwl} suits ${area.mix.split(",")[0]}?`, a: `${pick.name} is the most popular choice here (${pick.note.toLowerCase()}). We'll suggest the best option after seeing your space.` },
+];
+
+const t1 = `${kw} in ${place}`;
+const seoTitle = t1.length <= 50 ? `${t1} | Inkwave` : `${kw} in ${area.name} | Inkwave`;
+const seoTitleFinal = seoTitle.length < 36 ? seoTitle.replace("| Inkwave", "| Inkwave Signs & Prints") : seoTitle;
+const seoDesc = `${kw} in ${area.name} from ${fromLabel}. ${visit}, free design mock-up and installation. Call ${BRAND.phone}.`;
+
+const site = Astro.site!.toString().replace(/\/$/, "");
+const url = localUrl(local.slug, area.slug);
+const schema = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: `${kw} in ${place}`,
+    serviceType: s.title,
+    provider: { "@id": `${site}/#business` },
+    areaServed: { "@type": "Place", name: place },
+    url: site + url,
+    offers: { "@type": "Offer", priceCurrency: "INR", price: s.from },
+  },
+  { "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faqs.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })) },
+];
+
+const otherServices = LOCAL_SERVICES.filter((l) => l.slug !== local.slug);
+const nearby = area.nearby.map(areaBySlug);
+const wa = `https://wa.me/${BRAND.phoneRaw}?text=${encodeURIComponent(`Hi! I need a ${kw} in ${area.name}. Can you share the price?`)}`;
+---
+<Page
+  title={seoTitleFinal}
+  description={seoDesc}
+  breadcrumbs={[{ name: "Areas", path: "/areas" }, { name: area.name, path: areaUrl(area.slug) }, { name: kw, path: url }]}
+  schema={schema}
+  eyebrow={place}
+  h1={`${kw} in ${place}`}
+  lead={intros[variant]}
+>
+  <Fragment slot="hero">
+    <ul class="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-fg/85">
+      <li class="flex items-center gap-1.5"><Truck className="h-4 w-4 text-magenta" /> {visit}</li>
+      <li class="flex items-center gap-1.5"><Clock className="h-4 w-4 text-cyan" /> Ready in {d.turnaround}</li>
+      <li class="flex items-center gap-1.5"><ShieldCheck className="h-4 w-4 text-yellow" /> {d.warranty} warranty</li>
+    </ul>
+    <div class="mt-7 flex flex-col gap-3 sm:flex-row">
+      <a href={`tel:${BRAND.phoneRaw}`} class="inline-flex items-center justify-center gap-2 rounded-full bg-fg px-6 py-3 font-semibold text-ink transition hover:bg-magenta"><Phone className="h-4 w-4" /> Call {BRAND.phone}</a>
+      <a href={wa} target="_blank" rel="noopener" class="inline-flex items-center justify-center gap-2 rounded-full bg-[#25D366] px-6 py-3 font-semibold text-white"><MessageCircle className="h-4 w-4" /> WhatsApp for a quote</a>
+    </div>
+  </Fragment>
+
+  <div class="mx-auto max-w-3xl space-y-12 px-4 sm:px-6">
+    <section>
+      <h2 class="font-display text-2xl font-bold text-fg">Why {area.name} customers choose us</h2>
+      <ul class="mt-4 space-y-3 text-fg/85">
+        <li class="flex gap-3"><Check className="mt-1 h-4 w-4 shrink-0 text-[#15803d]" /><span><b class="text-fg">{visit}.</b> {area.name} is {dist}.</span></li>
+        <li class="flex gap-3"><Check className="mt-1 h-4 w-4 shrink-0 text-[#15803d]" /><span><b class="text-fg">Local experience.</b> We regularly work with {area.mix} around {area.landmarks.join(", ")}.</span></li>
+        <li class="flex gap-3"><Check className="mt-1 h-4 w-4 shrink-0 text-[#15803d]" /><span><b class="text-fg">Ready in {d.turnaround}.</b> {regionNote}</span></li>
+        <li class="flex gap-3"><Check className="mt-1 h-4 w-4 shrink-0 text-[#15803d]" /><span><b class="text-fg">{d.warranty} warranty</b> and installation by our own team, not contractors.</span></li>
+      </ul>
+      <div class="mt-6 rounded-2xl bg-ink-2 p-5">
+        <p class="text-sm text-mute">Most popular in {area.name}</p>
+        <p class="mt-1 font-display text-lg font-semibold text-fg">{pick.name}</p>
+        <p class="text-mute">{pick.note}. Other options: {d.types.filter((t) => t !== pick).map((t) => t.name).join(", ")}.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="font-display text-2xl font-bold text-fg">{kw} price in {area.name}</h2>
+      <p class="mt-4 text-lg text-fg/80">Starting from <b class="text-fg">{fromLabel}</b> + GST, same rates as the rest of Gurugram.</p>
+      <p class="mt-3 text-sm text-mute">Exact price depends on size, materials and installation. We'll send it on WhatsApp within 10 minutes. <a href={serviceUrl(s.title)} class="text-cyan underline">More about {svcl}</a>.</p>
+    </section>
+
+    <QuoteForm service={s.title} area={area.name} heading={`Get your price in ${area.name}`} />
+
+    <section>
+      <h2 class="font-display text-2xl font-bold text-fg">Serving all of {area.name}</h2>
+      <p class="mt-3 text-mute"><MapPin className="mr-1 inline h-4 w-4 text-magenta" />Including {area.landmarks.join(", ")}. {visit}, and installation by our own team.</p>
+    </section>
+
+    <section>
+      <h2 class="font-display text-2xl font-bold text-fg">Questions from {area.name} customers</h2>
+      <div class="mt-4 divide-y divide-line border-y border-line">
+        {faqs.map((f) => (
+          <details class="group">
+            <summary class="flex cursor-pointer items-center justify-between gap-6 py-4 font-medium text-fg">{f.q}<ChevronDown className="h-5 w-5 shrink-0 text-mute transition-transform group-open:rotate-180" /></summary>
+            <p class="pb-4 leading-relaxed text-mute">{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </section>
+
+    <nav aria-label="Related" class="grid gap-8 sm:grid-cols-2">
+      <div>
+        <h2 class="font-display text-lg font-bold text-fg">{kw} near {area.name}</h2>
+        <ul class="mt-3 space-y-2 text-sm">
+          {nearby.map((n) => <li><a href={localUrl(local.slug, n.slug)} class="text-fg/85 hover:text-magenta">{kw} in {n.name}</a></li>)}
+        </ul>
+      </div>
+      <div>
+        <h2 class="font-display text-lg font-bold text-fg">More services in {area.name}</h2>
+        <ul class="mt-3 space-y-2 text-sm">
+          {otherServices.slice(0, 5).map((o) => <li><a href={localUrl(o.slug, area.slug)} class="text-fg/85 hover:text-magenta">{o.keyword} in {area.name}</a></li>)}
+          <li><a href={areaUrl(area.slug)} class="font-medium text-cyan">All services in {area.name} →</a></li>
+        </ul>
+      </div>
+    </nav>
+  </div>
+  <MobileBar />
+</Page>

@@ -1,6 +1,6 @@
 # Inkwave Signs & Prints — website
 
-Built with **Astro 5** (pre-rendered HTML for SEO) + **React** islands, **Tailwind CSS v4** and **Framer Motion**.
+A simple, fast site built with **Astro 5** (plain pre-rendered HTML) and **Tailwind CSS v4**. No JavaScript framework is sent to visitors — only tiny scripts for the mobile menu and enquiry forms.
 
 ```bash
 npm install
@@ -13,23 +13,25 @@ npm run preview    # serve the built site
 
 | What | File |
 | --- | --- |
-| Business name, phone, address, services, prices, projects, FAQs | `src/data.ts` |
-| Service detail text (features, materials, warranty) | `src/details.ts` |
-| SEO page copy: service pages, area pages, price guides | `src/content.ts` |
-| Opening hours (live "Open now" badge) | `src/hours.ts` |
-| Colours (light & dark theme) | top of `src/index.css` |
-| Page `<head>`, SEO tags, business schema, analytics | `src/layouts/Base.astro` |
-| Pages / URLs | `src/pages/` |
+| Business name, phone, address, services, prices, projects, reviews, FAQs | `src/data.ts` |
+| The 6 services, their starting prices, and the products under each | `src/data.ts`, `src/details.ts` |
+| Service page text for Google (titles, intro, FAQs) | `src/content.ts` |
+| Areas served + local pages | `src/areas.ts` |
+| Home page | `src/pages/index.astro` |
+| Header / footer | `src/components/Header.astro`, `Footer.astro` |
+| Colours | top of `src/index.css` |
+| SEO tags, business schema, analytics | `src/layouts/Base.astro` |
 
-## Pages generated (44)
+## Pages (187)
 
-- `/` home
-- `/services` + 16 service pages, e.g. `/services/led-sign-board`
-- `/industries` + 8 industry pages
-- `/areas` + 8 area pages
-- `/guides` + 4 price guides
+- `/` home: hero, services, our work, "get your price" form, why us, reviews, FAQ, contact
+- `/services` + 6 service pages, e.g. `/services/led-neon-sign-boards`
+- `/areas` + 25 area pages, e.g. `/areas/golf-course-road`
+- 150 local pages (6 services × 25 areas), e.g. `/led-sign-board-in-sector-29-gurugram`
 - `/privacy`, `/terms`, 404
-- `sitemap-index.xml` is generated automatically on build
+- `sitemap-index.xml` and `robots.txt` are generated on build
+
+To add an area, add it to `AREAS_LOCAL` in `src/areas.ts` and 7 pages are created automatically.
 
 ## Settings (`.env`)
 
@@ -54,4 +56,4 @@ Set up for **Netlify** via `netlify.toml` (build command, Node 20, caching & sec
 6. List the business with the **same name, address & phone** on Justdial, IndiaMART, Sulekha, Facebook, Instagram.
 7. Submit `https://YOURDOMAIN/sitemap-index.xml` in Google Search Console and Bing Webmaster Tools.
 8. Ask every happy customer for a Google review (QR code on invoices and installed signs).
-9. Publish a new guide or project every month. Add guides to `GUIDES` in `src/content.ts`.
+9. Replace the project illustrations with real photos (see the note at the top of `src/components/WorkArt.astro`).

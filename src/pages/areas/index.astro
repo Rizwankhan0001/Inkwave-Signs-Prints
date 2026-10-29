@@ -1,29 +1,30 @@
 ---
 import Page from "../../layouts/Page.astro";
-import { AREA_PAGES } from "../../content";
-import { AREAS } from "../../data";
-import { MapPin, ArrowRight } from "lucide-react";
+import MobileBar from "../../components/MobileBar.astro";
+import { AREAS_LOCAL, areaUrl, visitTime } from "../../areas";
+const regions = ["Gurugram", "Delhi", "Faridabad", "Noida"] as const;
 ---
 <Page
-  title="Areas We Serve — Gurugram, Delhi, Faridabad, Noida | Inkwave"
-  description="Sign board and printing services across Gurugram, DLF Cyber City, Golf Course Road, Sohna Road, Manesar, Dwarka, Faridabad and Noida."
+  title="Areas We Serve in Gurugram & Delhi NCR | Inkwave"
+  description="Sign board maker serving Gurugram, Cyber City, Golf Course Road, Sohna Road, Manesar, Dwarka, Delhi, Faridabad and Noida. Free site visit and mock-up."
   breadcrumbs={[{ name: "Areas", path: "/areas" }]}
-  current="areas"
-  eyebrow="Areas we serve"
-  h1="Installed across Delhi NCR"
-  lead="Our workshop is in Udyog Vihar, Gurugram. We visit, measure and install across the NCR, and ship bulk orders anywhere in India."
+  h1="Areas we serve"
+  lead="Our workshop is in Udyog Vihar, Gurugram. We visit, measure and install across Delhi NCR. Pick your area for local prices and visit times."
 >
-  <div class="mx-auto max-w-7xl px-4 sm:px-6">
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      {AREA_PAGES.map((a) => (
-        <a href={`/areas/${a.slug}`} class="card group flex flex-col rounded-3xl p-6 transition hover:-translate-y-1 hover:border-fg/25">
-          <MapPin className="h-6 w-6 text-magenta" />
-          <h2 class="mt-4 font-display text-lg font-semibold text-fg">{a.name}</h2>
-          <p class="mt-2 flex-1 text-sm leading-relaxed text-mute">{a.intro}</p>
-          <span class="mt-4 flex items-center gap-1 text-sm font-medium text-cyan">View area <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" /></span>
-        </a>
-      ))}
-    </div>
-    <p class="mt-10 text-sm text-mute">We also serve: {AREAS.join(", ")}.</p>
+  <div class="mx-auto max-w-6xl space-y-10 px-4 sm:px-6">
+    {regions.map((r) => (
+      <section>
+        <h2 class="font-display text-2xl font-bold text-fg">{r}</h2>
+        <div class="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {AREAS_LOCAL.filter((a) => a.region === r).map((a) => (
+            <a href={areaUrl(a.slug)} class="rounded-2xl border border-line p-4 transition hover:shadow-md">
+              <span class="block font-display font-semibold text-fg">{a.name}</span>
+              <span class="mt-1 block text-xs text-mute">{visitTime(a.km).visit}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
   </div>
+  <MobileBar quoteHref="/#estimate" />
 </Page>
